@@ -101,9 +101,11 @@ code {
 }
 /* Variables et expressions mathématiques : serif, lisible, sans bruit visuel */
 .m {
+  display: inline;
   font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, ui-serif, serif;
   font-size: 1.06em;
   letter-spacing: 0.01em;
+  white-space: nowrap;
 }
 a { color: var(--accent); text-underline-offset: 3px; }
 a:hover { text-decoration: none; }
@@ -306,23 +308,27 @@ main { padding-block-end: var(--space-7); }
 }
 .steps > li {
   counter-increment: st;
-  display: grid;
-  grid-template-columns: 1.5rem 1fr;
-  gap: var(--space-2);
-  align-items: start;
+  position: relative;
+  padding-inline-start: 2.1rem;
+  min-block-size: 1.6rem;
   font-size: var(--fs-sm);
+  line-height: 1.6;
   margin-block: var(--space-2);
 }
 .steps > li::before {
   content: counter(st);
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 0.1rem;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  line-height: 1.5rem;
   font-family: var(--font-mono);
   font-size: 0.7rem;
-  line-height: 1.5rem;
   text-align: center;
   color: var(--accent);
   background: var(--accent-soft);
   border-radius: 50%;
-  block-size: 1.5rem;
 }
 
 /* Table de conversion */
@@ -534,67 +540,266 @@ const CHAPTERS = [
   id: 'arith',
   num: '01',
   title: 'Arithmétique',
-  tagline: 'Divisibilité, division euclidienne, PGCD/PPCM, congruences. Le chapitre qui tombe presque toujours en exercice 1.',
+  tagline: 'Divisibilité, division euclidienne, nombres premiers, PGCD par trois méthodes, Euclide et Bézout démontés pas à pas, PPCM, congruences et clés de contrôle.',
   essentiel: `
     <div class="card">
-      <h3>Divisibilité</h3>
-      <p><span class="m">a | b</span> se lit "a divise b" : il existe un entier <span class="m">k</span> tel que <span class="m">b = k × a</span>. C'est a qui est le diviseur.</p>
+      <h3>Divisibilité : ce que ça veut dire exactement</h3>
+      <p><span class="m">a | b</span> se lit « a divise b ». Traduction formelle : il existe un entier <span class="m">k</span> tel que <span class="m">b = k × a</span>. Autrement dit, la division de <span class="m">b</span> par <span class="m">a</span> tombe juste, sans reste.</p>
       <ul>
-        <li>1 divise tout entier, et tout entier non nul divise 0.</li>
-        <li>Si <span class="m">a | b</span> et <span class="m">b | c</span> alors <span class="m">a | c</span> (transitivité).</li>
-        <li>Si <span class="m">a | b</span> et <span class="m">a | c</span> alors <span class="m">a | (b + c)</span> et <span class="m">a | (b − c)</span>.</li>
+        <li><span class="m">a</span> est le <strong>diviseur</strong>, <span class="m">b</span> le <strong>multiple</strong>. L’ordre compte : <span class="m">3 | 12</span> est vrai, <span class="m">12 | 3</span> est faux.</li>
+        <li><span class="m">1</span> divise tout entier. Tout entier non nul divise <span class="m">0</span>, car <span class="m">0 = 0 × a</span>.</li>
+        <li><span class="m">0 | b</span> n’a de sens que pour <span class="m">b = 0</span> : on ne divise pas par zéro, donc en pratique <span class="m">a ≠ 0</span>.</li>
       </ul>
-      <p><strong>Critères à connaître par cœur</strong> : 2 (dernier chiffre pair) · 3 (somme des chiffres divisible par 3) · 4 (deux derniers chiffres) · 5 (finit par 0 ou 5) · 9 (somme des chiffres) · 10 · 11 (somme alternée des chiffres).</p>
+      <p><strong>Trois propriétés à savoir réutiliser</strong> :</p>
+      <span class="formula">a | b et b | c ⇒ a | c &nbsp;(transitivité)<br>a | b et a | c ⇒ a | (b + c) et a | (b − c)<br>a | b ⇒ a | (k × b) pour tout entier k</span>
+      <p>La deuxième se généralise : si <span class="m">a</span> divise <span class="m">b</span> et <span class="m">c</span>, alors <span class="m">a</span> divise toute <strong>combinaison linéaire</strong> <span class="m">ub + vc</span>. C’est exactement l’argument qui fait fonctionner l’algorithme d’Euclide.</p>
     </div>
+
     <div class="card">
-      <h3>Division euclidienne</h3>
-      <p>Pour <span class="m">a ∈ ℤ</span> et <span class="m">b ∈ ℕ*</span>, il existe un unique couple <span class="m">(q, r)</span> tel que :</p>
+      <h3>Critères de divisibilité : d’où ils viennent</h3>
+      <p>Un nombre s’écrit en base 10 : <span class="m">n = … + c₂×100 + c₁×10 + c₀</span>. Les critères viennent des congruences de 10 modulo le diviseur.</p>
+      <table class="basetbl">
+        <caption>Critère et raisonnement</caption>
+        <thead><tr><th>Par</th><th>Test</th><th>Pourquoi</th></tr></thead>
+        <tbody>
+          <tr><td>2</td><td>dernier chiffre pair</td><td>10 ≡ 0 [2], tout sauf les unités disparaît</td></tr>
+          <tr><td>3</td><td>somme des chiffres</td><td>10 ≡ 1 [3], donc n ≡ somme des chiffres [3]</td></tr>
+          <tr><td>4</td><td>deux derniers chiffres</td><td>100 ≡ 0 [4]</td></tr>
+          <tr><td>5</td><td>finit par 0 ou 5</td><td>10 ≡ 0 [5]</td></tr>
+          <tr><td>9</td><td>somme des chiffres</td><td>10 ≡ 1 [9], même raisonnement que 3</td></tr>
+          <tr><td>11</td><td>somme alternée</td><td>10 ≡ −1 [11], donc les signes alternent</td></tr>
+        </tbody>
+      </table>
+      <div class="ex">
+        <span class="ex__tag">Exemple : 1 234 567</span>
+        <p>Somme des chiffres : <span class="m">1+2+3+4+5+6+7 = 28</span>. 28 n’est ni multiple de 3 ni de 9, donc le nombre n’est divisible ni par 3 ni par 9.</p>
+        <p>Somme alternée : <span class="m">7 − 6 + 5 − 4 + 3 − 2 + 1 = 4</span>, non multiple de 11.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Division euclidienne : le mode d’emploi</h3>
+      <p>Pour <span class="m">a ∈ ℤ</span> et <span class="m">b ∈ ℕ*</span>, il existe un <strong>unique</strong> couple <span class="m">(q, r)</span> tel que :</p>
       <span class="formula">a = b × q + r &nbsp;&nbsp;avec&nbsp;&nbsp; 0 ≤ r &lt; b</span>
-      <p>Le reste est <strong>toujours positif ou nul</strong>, même quand a est négatif. Exemple : <span class="m">−17 = 5 × (−4) + 3</span>, donc <span class="m">q = −4</span> et <span class="m">r = 3</span>.</p>
+      <p>Le quotient <span class="m">q</span> est la partie entière de <span class="m">a/b</span> ; le reste <span class="m">r</span> est ce qui manque pour retomber sur <span class="m">a</span>.</p>
+      <div class="ex">
+        <span class="ex__tag">Cas positif : 487 par 13</span>
+        <p><span class="m">13 × 37 = 481</span>, donc <span class="m">487 = 13 × 37 + 6</span>. Quotient 37, reste 6, et <span class="m">0 ≤ 6 &lt; 13</span>.</p>
+      </div>
+      <div class="ex">
+        <span class="ex__tag">Cas négatif : −17 par 5</span>
+        <p>On cherche le plus grand multiple de 5 inférieur ou égal à −17 : c’est <span class="m">−20 = 5 × (−4)</span>.</p>
+        <span class="formula">−17 = 5 × (−4) + 3 → q = −4 et r = 3</span>
+        <p>Écrire <span class="m">−17 = 5 × (−3) − 2</span> est vrai arithmétiquement, mais <span class="m">r = −2</span> viole <span class="m">r ≥ 0</span>. Le reste euclidien est <strong>toujours</strong> positif.</p>
+      </div>
+      <p><strong>Pourquoi r &lt; b</strong> : si <span class="m">r ≥ b</span>, on peut encore retirer un <span class="m">b</span> et augmenter <span class="m">q</span> d’une unité. Le couple ne serait plus unique, donc on impose que <span class="m">r</span> soit le plus petit résidu possible.</p>
+      <p>C’est ce reste qui relie tout le chapitre : <span class="m">a ≡ r [b]</span>, et <span class="m">pgcd(a, b) = pgcd(b, r)</span>, le moteur d’Euclide.</p>
     </div>
+
     <div class="card">
-      <h3>PGCD et PPCM</h3>
-      <span class="formula">pgcd(a, b) × ppcm(a, b) = a × b</span>
-      <p><strong>Algorithme d'Euclide</strong> : on remplace <span class="m">(a, b)</span> par <span class="m">(b, r)</span> tant que <span class="m">r ≠ 0</span>. Le dernier reste non nul est le PGCD.</p>
-      <p><strong>Par décomposition</strong> : PGCD = produit des facteurs communs pris avec le <em>plus petit</em> exposant. PPCM = produit de tous les facteurs pris avec le <em>plus grand</em> exposant.</p>
+      <h3>Nombres premiers et décomposition</h3>
+      <p>Un entier <span class="m">n ≥ 2</span> est premier s’il n’a que <strong>deux</strong> diviseurs : 1 et lui-même. Donc 1 n’est pas premier, et 2 est le seul premier pair.</p>
+      <p><strong>Test de primalité</strong> : on essaie les nombres premiers jusqu’à <span class="m">√n</span> seulement. Raison : si <span class="m">n = a × b</span> avec <span class="m">a ≤ b</span>, alors <span class="m">a ≤ √n</span>. Inutile de tester au-delà.</p>
+      <div class="ex">
+        <span class="ex__tag">Exemple : 360 en facteurs premiers</span>
+        <span class="formula">360 ÷ 2 = 180<br>180 ÷ 2 = 90<br>90 ÷ 2 = 45<br>45 ÷ 3 = 15<br>15 ÷ 3 = 5<br>5 ÷ 5 = 1</span>
+        <p><span class="m">360 = 2³ × 3² × 5</span>. La décomposition est <strong>unique</strong> à l’ordre près : c’est le théorème fondamental de l’arithmétique.</p>
+        <p><strong>Bonus</strong> : le nombre de diviseurs vaut <span class="m">(3+1)(2+1)(1+1) = 24</span>. On ajoute 1 à chaque exposant et on multiplie.</p>
+      </div>
     </div>
+
     <div class="card">
-      <h3>Congruences</h3>
+      <h3>PGCD : le plus grand diviseur commun</h3>
+      <p>Le PGCD de <span class="m">a</span> et <span class="m">b</span> est le plus grand entier positif qui divise les deux. On note <span class="m">pgcd(a, b)</span>, parfois <span class="m">a ∧ b</span>.</p>
+      <div class="ex">
+        <span class="ex__tag">Exemple concret : 84 et 36</span>
+        <p>Diviseurs de 84 : 1, 2, 3, 4, 6, 7, 12, 14, 21, 28, 42, 84. Diviseurs de 36 : 1, 2, 3, 4, 6, 9, 12, 18, 36.</p>
+        <p>Communs : 1, 2, 3, 4, 6, 12. Le plus grand est <strong>12</strong>.</p>
+      </div>
+      <p><strong>Trois méthodes</strong>, à choisir selon les nombres :</p>
+      <ol class="steps">
+        <li><strong>Lister les diviseurs</strong> : seulement pour de petits nombres, comme ci-dessus.</li>
+        <li><strong>Décomposition</strong> : produit des facteurs communs pris avec le <em>plus petit</em> exposant.</li>
+        <li><strong>Euclide</strong> : divisions successives, la méthode universelle et la plus rapide.</li>
+      </ol>
+      <div class="ex">
+        <span class="ex__tag">Méthode 2 sur 84 et 36</span>
+        <span class="formula">84 = 2² × 3 × 7 &nbsp;·&nbsp; 36 = 2² × 3²<br>pgcd = 2² × 3 = 12</span>
+        <p>Le 7 n’est pas commun, il est exclu. Pour le PPCM, on prend au contraire <strong>tous</strong> les facteurs avec le <em>plus grand</em> exposant : <span class="m">2² × 3² × 7 = 252</span>.</p>
+      </div>
+      <p><strong>Propriétés utiles</strong> :</p>
+      <ul>
+        <li><span class="m">pgcd(a, 0) = a</span> et <span class="m">pgcd(a, 1) = 1</span>.</li>
+        <li><span class="m">pgcd(a, b) = pgcd(|a|, |b|)</span> : le signe ne change rien.</li>
+        <li><span class="m">pgcd(ka, kb) = k × pgcd(a, b)</span> : un facteur commun se met en facteur.</li>
+      </ul>
+      <p>Et surtout : <strong>tout diviseur commun divise le PGCD</strong>. Les diviseurs communs de 84 et 36 sont exactement les diviseurs de 12.</p>
+      <p><strong>Application immédiate</strong> : rendre une fraction irréductible. <span class="m">84/126</span>, avec <span class="m">pgcd(84, 126) = 42</span>, donne <span class="m">2/3</span>. Diviser par 6 ou par 7 ne suffit pas : la fraction ne serait pas irréductible.</p>
+    </div>
+
+    <div class="card">
+      <h3>Algorithme d’Euclide : comment et pourquoi</h3>
+      <p>On divise <span class="m">a</span> par <span class="m">b</span>, puis on remplace <span class="m">(a, b)</span> par <span class="m">(b, r)</span>, et on recommence. On s’arrête quand le reste vaut 0 : le <strong>dernier reste non nul</strong> est le PGCD.</p>
+      <table class="basetbl">
+        <caption>pgcd(1071, 1029)</caption>
+        <thead><tr><th>Étape</th><th>Division</th><th>Reste</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>1071 = 1029 × 1 + 42</td><td>42</td></tr>
+          <tr><td>2</td><td>1029 = 42 × 24 + 21</td><td>21</td></tr>
+          <tr><td>3</td><td>42 = 21 × 2 + 0</td><td>0 → stop</td></tr>
+        </tbody>
+      </table>
+      <p>Dernier reste non nul : <span class="m">pgcd(1071, 1029) = 21</span>.</p>
+      <p><strong>Pourquoi ça marche</strong> : dans <span class="m">a = bq + r</span>, on a <span class="m">r = a − bq</span>. Tout entier qui divise <span class="m">a</span> et <span class="m">b</span> divise donc <span class="m">r</span>, par combinaison linéaire. Réciproquement, tout entier qui divise <span class="m">b</span> et <span class="m">r</span> divise <span class="m">a</span>. Les deux couples ont donc <strong>exactement les mêmes diviseurs communs</strong>, donc le même PGCD.</p>
+      <p><strong>Pourquoi ça s’arrête</strong> : la suite des restes est strictement décroissante et positive. On atteint forcément 0. Le nombre d’étapes est logarithmique, ce qui rend la méthode utilisable sur de très grands nombres : c’est elle qui tourne dans les calculatrices et les bibliothèques crypto.</p>
+      <div class="ex">
+        <span class="ex__tag">Version courte à écrire sur la copie</span>
+        <span class="formula">84 = 36 × 2 + 12<br>36 = 12 × 3 + 0<br>donc pgcd(84, 36) = 12</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Théorème de Bézout et Euclide étendu</h3>
+      <p>Le PGCD n’est pas seulement un diviseur : c’est une <strong>combinaison linéaire</strong> de <span class="m">a</span> et <span class="m">b</span>.</p>
+      <span class="formula">Si d = pgcd(a, b), alors ∃ u, v ∈ ℤ tels que a·u + b·v = d</span>
+      <p><strong>Méthode</strong> : on remonte les divisions d’Euclide de la dernière vers la première, en remplaçant chaque reste par son expression en fonction des deux précédents.</p>
+      <div class="ex">
+        <span class="ex__tag">Exemple : 84 et 36</span>
+        <span class="formula">84 = 36 × 2 + 12 &nbsp;⇒&nbsp; 12 = 84 − 2 × 36</span>
+        <p>Une seule étape suffit : <span class="m">pgcd = 12 = 84 × 1 + 36 × (−2)</span>, donc <span class="m">u = 1</span> et <span class="m">v = −2</span>. Vérification : <span class="m">84 − 72 = 12</span>.</p>
+      </div>
+      <div class="ex">
+        <span class="ex__tag">Exemple : 1071 et 1029 (remontée complète)</span>
+        <span class="formula">21 = 1029 − 24 × 42<br>42 = 1071 − 1 × 1029<br>21 = 1029 − 24 × (1071 − 1029)<br>21 = 1029 × 25 − 1071 × 24</span>
+        <p>Donc <span class="m">1071 × (−24) + 1029 × 25 = 21</span>. Contrôle : <span class="m">25 725 − 25 704 = 21</span>.</p>
+      </div>
+      <p><strong>Cas clé</strong> : <span class="m">a</span> et <span class="m">b</span> sont premiers entre eux <strong>si et seulement si</strong> il existe <span class="m">u, v</span> avec <span class="m">au + bv = 1</span>.</p>
+      <p><strong>À quoi ça sert</strong> : trouver l’<strong>inverse modulaire</strong> (cœur du RSA), résoudre <span class="m">ax ≡ c [n]</span>, simplifier des congruences. Les coefficients ne sont pas uniques : on peut ajouter <span class="m">k·b</span> à <span class="m">u</span> en retirant <span class="m">k·a</span> à <span class="m">v</span>.</p>
+    </div>
+
+    <div class="card">
+      <h3>Nombres premiers entre eux</h3>
+      <p><span class="m">a</span> et <span class="m">b</span> sont premiers entre eux (ou « étrangers ») quand <span class="m">pgcd(a, b) = 1</span>. Une fraction est irréductible exactement dans ce cas.</p>
+      <p><strong>Lemme de Gauss</strong> : si <span class="m">a | bc</span> et <span class="m">pgcd(a, b) = 1</span>, alors <span class="m">a | c</span>. C’est ce qui autorise à simplifier une congruence par un facteur premier avec le module.</p>
+      <div class="ex">
+        <span class="ex__tag">Exemple d’usage</span>
+        <p><span class="m">6 | 4 × 9</span> est vrai (<span class="m">36 = 6 × 6</span>). Comme <span class="m">pgcd(6, 4) = 2 ≠ 1</span>, Gauss ne s’applique pas : 6 ne divise pas 9. En revanche <span class="m">3 | 4 × 9</span> et <span class="m">pgcd(3, 4) = 1</span> donnent bien <span class="m">3 | 9</span>.</p>
+      </div>
+      <p><strong>Conséquences pratiques</strong> : <span class="m">a/b</span> irréductible ⟺ <span class="m">pgcd(a, b) = 1</span> · si <span class="m">d = pgcd(a, b)</span> alors <span class="m">a/d</span> et <span class="m">b/d</span> sont premiers entre eux · <span class="m">1</span> est premier avec tout entier.</p>
+    </div>
+
+    <div class="card">
+      <h3>PPCM : le plus petit multiple commun</h3>
+      <p>Le PPCM est le plus petit entier <strong>strictement positif</strong> multiple à la fois de <span class="m">a</span> et de <span class="m">b</span>. On note <span class="m">ppcm(a, b)</span> ou <span class="m">a ∨ b</span>.</p>
+      <p><strong>Trois méthodes</strong> :</p>
+      <ol class="steps">
+        <li>Lister les multiples des deux et prendre le premier commun (petits nombres).</li>
+        <li>Décomposition : tous les facteurs, avec le <em>plus grand</em> exposant.</li>
+        <li>Formule : <span class="m">ppcm(a, b) = a × b / pgcd(a, b)</span>.</li>
+      </ol>
+      <div class="ex">
+        <span class="ex__tag">Exemple : 12 et 18</span>
+        <p>Multiples de 12 : 12, 24, 36… Multiples de 18 : 18, 36… Premier commun : <strong>36</strong>.</p>
+        <span class="formula">12 = 2² × 3 &nbsp;·&nbsp; 18 = 2 × 3²<br>ppcm = 2² × 3² = 36 = 12 × 18 / 6</span>
+      </div>
+      <p><strong>Pourquoi la formule</strong> : on écrit <span class="m">a = d·a'</span> et <span class="m">b = d·b'</span> avec <span class="m">d = pgcd(a, b)</span>. Alors <span class="m">a'</span> et <span class="m">b'</span> sont premiers entre eux, et le plus petit multiple commun est <span class="m">d·a'·b' = ab/d</span>.</p>
+      <span class="formula">pgcd(a, b) × ppcm(a, b) = a × b &nbsp;(a, b &gt; 0)</span>
+      <div class="ex">
+        <span class="ex__tag">Application concrète : engrenages</span>
+        <p>Une roue de 12 dents entraîne une roue de 18 dents. Les deux retrouvent leur position de départ après <span class="m">ppcm(12, 18) = 36</span> dents, soit 3 tours de la petite et 2 tours de la grande. Même logique pour des cycles de tâches, des feux tricolores ou des périodes de facturation.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Congruences : le calcul modulo n</h3>
+      <p>Deux nombres sont congrus modulo <span class="m">n</span> quand ils ont le <strong>même reste</strong> dans la division par <span class="m">n</span>.</p>
       <span class="formula">a ≡ b [n] &nbsp;⇔&nbsp; n | (a − b) &nbsp;⇔&nbsp; a et b ont le même reste modulo n</span>
-      <p>On peut additionner, soustraire et multiplier des congruences membre à membre, et élever à une puissance. Exemple : <span class="m">2⁵ = 32 ≡ 1 [31]</span>.</p>
-      <p><strong>Applications BTS</strong> : clés de contrôle (EAN-13, ISBN, NIR), tests de parité, chiffrement RSA, numérotation de boucles algorithmiques.</p>
+      <p>On peut additionner, soustraire et multiplier des congruences membre à membre, et élever à une puissance. On travaille alors sur les restes <span class="m">0</span> à <span class="m">n−1</span>.</p>
+      <div class="ex">
+        <span class="ex__tag">Exemple : 2¹⁰ modulo 7</span>
+        <span class="formula">2³ = 8 ≡ 1 [7]<br>2⁹ = (2³)³ ≡ 1³ = 1<br>2¹⁰ = 2⁹ × 2 ≡ 2</span>
+        <p>Inutile de calculer 1024 : on réduit à chaque étape. C’est la technique des sujets RSA.</p>
+      </div>
+      <p><strong>Division : la règle exacte</strong>. On ne divise jamais par n’importe quoi. Si <span class="m">ka ≡ kb [n]</span>, alors <span class="m">a ≡ b [n/d]</span> avec <span class="m">d = pgcd(k, n)</span>. Quand <span class="m">d = 1</span> (facteur premier avec le module), la simplification est directe.</p>
+      <span class="formula">4 ≡ 10 [6] &nbsp;÷2&nbsp; 2 ≡ 5 [3] &nbsp;(et non [6])</span>
+      <p><strong>Inverse modulaire</strong> : trouver <span class="m">x</span> tel que <span class="m">ax ≡ 1 [n]</span> revient à résoudre <span class="m">au + nv = 1</span> par Bézout. Il existe si et seulement si <span class="m">pgcd(a, n) = 1</span>.</p>
+      <div class="ex">
+        <span class="ex__tag">Exemple : inverse de 3 modulo 7</span>
+        <p><span class="m">3 × 5 = 15 = 2 × 7 + 1</span>, donc <span class="m">3 × 5 ≡ 1 [7]</span> : l’inverse de 3 est <strong>5</strong>.</p>
+      </div>
     </div>
+
     <div class="card">
-      <h3>Nombres premiers</h3>
-      <p>Un entier <span class="m">n ≥ 2</span> est premier s'il n'a que deux diviseurs : 1 et lui-même. 2 est le seul nombre premier pair.</p>
-      <p>Pour tester <span class="m">n</span> : on essaie les diviseurs premiers jusqu'à <span class="m">√n</span>. Si aucun ne divise, <span class="m">n</span> est premier.</p>
+      <h3>Application BTS : les clés de contrôle</h3>
+      <p>Les congruences servent à détecter les erreurs de saisie. On calcule une clé à partir des autres chiffres, et le système vérifie que le reste est le bon.</p>
+      <div class="ex">
+        <span class="ex__tag">EAN-13 : code-barres 5449000000996</span>
+        <p>On pondère les 12 premiers chiffres par 1 et 3 en alternance, en partant de la gauche :</p>
+        <span class="formula">5×1 + 4×3 + 4×1 + 9×3 + 0 + 0 + 0 + 0 + 0 + 0 + 9×1 + 9×3<br>= 5 + 12 + 4 + 27 + 9 + 27 = 84</span>
+        <p>Clé = <span class="m">(10 − 84 mod 10) mod 10 = 6</span>. Le dernier chiffre du code est bien 6.</p>
+      </div>
+      <div class="ex">
+        <span class="ex__tag">NIR : clé de sécurité sociale</span>
+        <p>La clé à deux chiffres vaut <span class="m">97 − (numéro mod 97)</span>. Une erreur sur un seul chiffre décale le reste et invalide la clé, sauf cas rare de collision.</p>
+      </div>
+      <p>Autres usages SLAM : répartition dans les tables de hachage (<span class="m">h(k) = k mod m</span>), tourniquet d’ordonnancement, numérotation circulaire des buffers, ISBN-10 modulo 11.</p>
+    </div>
+
+    <div class="card">
+      <h3>Les réflexes du sujet</h3>
+      <ol class="steps">
+        <li><strong>Poser la division euclidienne</strong> avant tout : c’est la brique de base, reste toujours positif.</li>
+        <li><strong>Décomposer en facteurs premiers</strong> dès qu’on demande PGCD ou PPCM de petits nombres : c’est vérifiable et rapide.</li>
+        <li><strong>Utiliser Euclide</strong> pour les grands nombres, en écrivant chaque division : les points de méthode sont comptés.</li>
+        <li><strong>Contrôler le PGCD</strong> en vérifiant qu’il divise bien les deux nombres de départ.</li>
+        <li><strong>Ne jamais diviser une congruence</strong> sans avoir vérifié <span class="m">pgcd(k, n) = 1</span>.</li>
+      </ol>
     </div>`,
   pieges: `
-    <div class="trap"><span class="trap__flag">a|b</span><p>Le sens de lecture. <span class="m">3 | 12</span> est vrai, mais <span class="m">12 | 3</span> est faux. <span class="fix">Toujours lire "le premier divise le second".</span></p></div>
-    <div class="trap"><span class="trap__flag">reste</span><p>Un reste négatif est refusé. <span class="m">−17 = 5 × (−3) − 2</span> est un calcul juste mais <span class="m">r = −2 &lt; 0</span> ne respecte pas la définition. <span class="fix">q = −4, r = 3.</span></p></div>
-    <div class="trap"><span class="trap__flag">PGCD</span><p>Confondre les exposants : pour <span class="m">12 = 2² × 3</span> et <span class="m">18 = 2 × 3²</span>, <span class="m">pgcd = 2 × 3 = 6</span> (petits exposants) et <span class="m">ppcm = 2² × 3² = 36</span> (grands exposants).</p></div>
-    <div class="trap"><span class="trap__flag">division</span><p>On ne simplifie jamais une congruence par un facteur quelconque. <span class="m">4 ≡ 10 [6]</span> mais en divisant par 2 on obtient <span class="m">2 ≡ 5 [6]</span>, ce qui est faux. <span class="fix">Simplification possible seulement si le facteur est premier avec n.</span></p></div>
-    <div class="trap"><span class="trap__flag">pgcd×ppcm</span><p>La formule <span class="m">pgcd × ppcm = a × b</span> suppose a et b positifs. Avec des négatifs, on prend les valeurs absolues.</p></div>`,
+    <div class="trap"><span class="trap__flag">a|b</span><p>Le sens de lecture. <span class="m">3 | 12</span> est vrai, <span class="m">12 | 3</span> est faux. <span class="fix">Toujours lire « le premier divise le second ».</span></p></div>
+    <div class="trap"><span class="trap__flag">reste</span><p>Un reste négatif est refusé. <span class="m">−17 = 5 × (−3) − 2</span> est un calcul juste mais <span class="m">r = −2 &lt; 0</span> viole la définition. <span class="fix">q = −4, r = 3.</span></p></div>
+    <div class="trap"><span class="trap__flag">exposants</span><p>PGCD = plus <strong>petits</strong> exposants, PPCM = plus <strong>grands</strong>. Avec <span class="m">12 = 2²×3</span> et <span class="m">18 = 2×3²</span> : pgcd 6, ppcm 36.</p></div>
+    <div class="trap"><span class="trap__flag">Euclide</span><p>Le PGCD est le dernier reste <strong>non nul</strong>, pas le dernier reste tout court (qui vaut 0 par définition) ni le dernier quotient.</p></div>
+    <div class="trap"><span class="trap__flag">Bézout</span><p><span class="m">au + bv = d</span> donne le PGCD, pas un multiple quelconque. Trouver <span class="m">2u + 4v = 2</span> ne prouve pas que le pgcd vaut 2 si l’on visait autre chose : il faut que le membre de droite soit bien le pgcd.</p></div>
+    <div class="trap"><span class="trap__flag">division</span><p>On ne simplifie pas une congruence par un facteur quelconque. <span class="m">4 ≡ 10 [6]</span>, mais diviser par 2 donne <span class="m">2 ≡ 5 [3]</span>, pas <span class="m">[6]</span>. <span class="fix">Modulo divisé par pgcd(k, n).</span></p></div>
+    <div class="trap"><span class="trap__flag">pgcd×ppcm</span><p>La formule <span class="m">pgcd × ppcm = a × b</span> suppose <span class="m">a, b &gt; 0</span>. Avec des négatifs, on prend les valeurs absolues.</p></div>
+    <div class="trap"><span class="trap__flag">premier</span><p>1 n’est pas premier. Et 2 est premier : la confusion « pair donc pas premier » coûte des points.</p></div>`,
   calc: 'arith',
   cards: [
     { r: 'a | b', v: 'a divise b : il existe k entier avec b = k × a.' },
-    { r: 'Critère de 3', v: 'La somme des chiffres est divisible par 3.' },
-    { r: 'Critère de 11', v: 'Somme alternée des chiffres divisible par 11.' },
+    { r: 'Critère de 3', v: 'Somme des chiffres divisible par 3 (car 10 ≡ 1 [3]).' },
+    { r: 'Critère de 11', v: 'Somme alternée des chiffres divisible par 11 (10 ≡ −1).' },
     { r: 'Division euclidienne', v: 'a = bq + r avec 0 ≤ r < b, reste toujours positif.' },
+    { r: 'Test de primalité', v: 'Diviser par les premiers jusqu’à √n seulement.' },
+    { r: 'Nombre de diviseurs', v: 'Si n = p^a × q^b, alors (a+1)(b+1) diviseurs.' },
     { r: 'Euclide', v: 'pgcd(a, b) = pgcd(b, r) jusqu’à r = 0. Dernier reste non nul.' },
+    { r: 'Pourquoi Euclide', v: 'a et b ont les mêmes diviseurs communs que b et r.' },
+    { r: 'PGCD par décomposition', v: 'Facteurs communs avec le plus petit exposant.' },
+    { r: 'PPCM par décomposition', v: 'Tous les facteurs avec le plus grand exposant.' },
     { r: 'pgcd × ppcm', v: 'pgcd(a, b) × ppcm(a, b) = a × b (a, b > 0).' },
+    { r: 'Bézout', v: '∃ u, v : au + bv = pgcd(a, b).' },
+    { r: 'Premiers entre eux', v: 'pgcd(a, b) = 1 ⟺ ∃ u, v : au + bv = 1.' },
+    { r: 'Gauss', v: 'a | bc et pgcd(a, b) = 1 ⇒ a | c.' },
     { r: 'a ≡ b [n]', v: 'n divise (a − b), donc même reste modulo n.' },
-    { r: 'Test de primalité', v: 'Diviser par les premiers jusqu’à √n seulement.' }
+    { r: 'Simplifier une congruence', v: 'ka ≡ kb [n] ⇒ a ≡ b [n/pgcd(k, n)].' },
+    { r: 'Inverse modulaire', v: 'ax ≡ 1 [n] existe si pgcd(a, n) = 1, via Bézout.' },
+    { r: 'Clé NIR', v: '97 − (numéro mod 97).' }
   ],
   quiz: [
     { q: 'Combien vaut pgcd(84, 36) ?', opts: ['6', '12', '24', '252'], a: 1, why: '84 = 36 × 2 + 12, puis 36 = 12 × 3 + 0. Le dernier reste non nul est 12.' },
-    { q: 'Quel est le reste de la division de −23 par 5 ?', opts: ['−3', '3', '2', '−2'], a: 2, why: '−23 = 5 × (−5) + 2, avec 0 ≤ 2 < 5. Le reste doit être positif.' },
-    { q: 'ppcm(12, 18) = ?', opts: ['6', '36', '108', '216'], a: 1, why: '12 = 2² × 3 et 18 = 2 × 3², donc ppcm = 2² × 3² = 36. On peut vérifier avec 12 × 18 / 6.' },
+    { q: 'Quel est le reste de la division de −23 par 5 ?', opts: ['−3', '3', '2', '−2'], a: 2, why: '−23 = 5 × (−5) + 2, avec 0 ≤ 2 < 5. Le reste euclidien doit être positif.' },
+    { q: 'ppcm(12, 18) = ?', opts: ['6', '36', '108', '216'], a: 1, why: '12 = 2²×3 et 18 = 2×3², donc ppcm = 2²×3² = 36. Vérification : 12 × 18 / 6 = 36.' },
+    { q: 'pgcd(1071, 1029) = ?', opts: ['42', '3', '21', '7'], a: 2, why: '1071 = 1029 + 42, 1029 = 42×24 + 21, 42 = 21×2 + 0. Dernier reste non nul : 21.' },
+    { q: 'Une relation de Bézout pour pgcd(84, 36) = 12 est :', opts: ['84×1 + 36×(−2) = 12', '84×2 + 36×(−3) = 12', '84×1 + 36×2 = 156', '84×(−1) + 36×3 = 24'], a: 0, why: '12 = 84 − 2×36. Les autres combinaisons ne donnent pas 12, ou donnent un autre multiple.' },
     { q: '135 est-il divisible par 9 ?', opts: ['Oui, 1 + 3 + 5 = 9', 'Non, il finit par 5', 'Oui, car il est impair', 'Impossible à dire sans poser la division'], a: 0, why: 'Critère de 9 : la somme des chiffres vaut 9, donc 135 = 9 × 15.' },
-    { q: 'Que signifie 7 ≡ 3 [4] ?', opts: ['7 = 3 × 4', '4 divise 7 − 3', '7 et 3 sont premiers entre eux', '7 > 3'], a: 1, why: '7 − 3 = 4 et 4 | 4. Les deux nombres ont le même reste (3) dans la division par 4.' },
     { q: 'Le nombre 91 est-il premier ?', opts: ['Oui', 'Non, divisible par 7', 'Non, divisible par 3', 'Non, divisible par 11'], a: 1, why: '91 = 7 × 13. Il faut tester les premiers jusqu’à √91 ≈ 9,5, donc 7 est sur la liste.' },
-    { q: 'La fraction 84/126 est irréductible après division par :', opts: ['6', '14', '42', '7'], a: 2, why: 'pgcd(84, 126) = 42, donc 84/126 = 2/3. Diviser par 6 ou 7 laisse encore un facteur commun.' },
-    { q: 'Si a | b et a | c, alors nécessairement :', opts: ['a | (b × c)', 'a | (b + c)', 'Les deux', 'Aucune des deux'], a: 2, why: 'La divisibilité est stable par somme et par produit : a divise toute combinaison linéaire.' }
+    { q: 'La fraction 84/126 devient irréductible en divisant par :', opts: ['6', '14', '42', '7'], a: 2, why: 'pgcd(84, 126) = 42, donc 84/126 = 2/3. Diviser par 6 ou 7 laisse un facteur commun.' },
+    { q: 'Que signifie 7 ≡ 3 [4] ?', opts: ['7 = 3 × 4', '4 divise 7 − 3', '7 et 3 sont premiers entre eux', '7 > 3'], a: 1, why: '7 − 3 = 4 et 4 | 4. Les deux nombres ont le même reste (3) dans la division par 4.' },
+    { q: 'Si a | b et a | c, alors nécessairement :', opts: ['a | (b × c)', 'a | (b + c)', 'Les deux', 'Aucune des deux'], a: 2, why: 'La divisibilité est stable par somme et par produit : a divise toute combinaison linéaire et tout produit.' },
+    { q: '2¹⁰ modulo 7 vaut :', opts: ['1', '2', '4', '0'], a: 1, why: '2³ = 8 ≡ 1, donc 2⁹ ≡ 1 et 2¹⁰ ≡ 2. Inutile de calculer 1024.' },
+    { q: 'Combien 360 admet-il de diviseurs ?', opts: ['24', '12', '18', '36'], a: 0, why: '360 = 2³×3²×5, donc (3+1)(2+1)(1+1) = 24 diviseurs.' },
+    { q: 'L’inverse de 3 modulo 7 est :', opts: ['5', '2', '4', '3'], a: 0, why: '3 × 5 = 15 = 2×7 + 1, donc 3 × 5 ≡ 1 [7].' },
+    { q: 'pgcd(a, 0) vaut, pour a > 0 :', opts: ['0', '1', 'a', 'Indéfini'], a: 2, why: 'Tout entier divise 0, et le plus grand diviseur de a est a lui-même.' }
   ]
 },
 {
@@ -640,7 +845,7 @@ const CHAPTERS = [
       <span class="formula">(1021)₃ = 1×27 + 0×9 + 2×3 + 1 = 34</span>
       <span class="formula">(101101)₂ = 32 + 8 + 4 + 1 = 45</span>
       <div class="ex">
-        <span class="ex__tag">Astuce — méthode de Horner</span>
+        <span class="ex__tag">Astuce : méthode de Horner</span>
         <p>Plus rapide sur les grands nombres, et sans calculer de puissances : on part du chiffre de gauche, on multiplie par la base, on ajoute le chiffre suivant.</p>
         <span class="formula">2 → 2×16 + 10 = 42 → 42×16 + 12 = 684</span>
         <p>En base 2, chaque étape est un « ×2 + bit » : <span class="m">1 → 2 → 5 → 11 → 22 → 45</span>.</p>
@@ -651,12 +856,12 @@ const CHAPTERS = [
       <h3>Base 10 → base b : divisions successives</h3>
       <p>On divise par <span class="m">b</span> autant de fois que nécessaire, on garde les <strong>restes</strong>, puis on les lit <strong>du dernier au premier</strong>. Le dernier quotient non nul donne le chiffre de tête.</p>
       <div class="ex">
-        <span class="ex__tag">Exemple — 156 en base 7</span>
+        <span class="ex__tag">Exemple : 156 en base 7</span>
         <span class="formula">156 = 7 × 22 + 2<br>22 = 7 × 3 + 1<br>3 = 7 × 0 + 3</span>
         <p>Restes lus à l’envers : <span class="m">2</span>, puis <span class="m">1</span>, puis <span class="m">3</span> → <span class="m">(156)₁₀ = (312)₇</span>. Vérification : <span class="m">3×49 + 1×7 + 2 = 156</span>.</p>
       </div>
       <div class="ex">
-        <span class="ex__tag">Exemple — 45 en binaire</span>
+        <span class="ex__tag">Exemple : 45 en binaire</span>
         <span class="formula">45 = 2×22 + 1<br>22 = 2×11 + 0<br>11 = 2×5 + 1<br>5 = 2×2 + 1<br>2 = 2×1 + 0<br>1 = 2×0 + 1</span>
         <p>Lecture de bas en haut : <span class="m">101101₂</span>.</p>
       </div>
@@ -683,7 +888,7 @@ const CHAPTERS = [
       <span class="formula">(0,101)₂ = 1/2 + 0/4 + 1/8 = 0,625</span>
       <p><strong>Décimal → base b</strong> : on multiplie la partie fractionnaire par <span class="m">b</span>, on note la partie entière, on recommence avec ce qui reste après la virgule. Lecture des parties entières <strong>de haut en bas</strong> (l’inverse des divisions).</p>
       <div class="ex">
-        <span class="ex__tag">Exemple — 0,6875 en binaire</span>
+        <span class="ex__tag">Exemple : 0,6875 en binaire</span>
         <span class="formula">0,6875 × 2 = 1,375 → 1<br>0,375 × 2 = 0,75 → 0<br>0,75 × 2 = 1,5 → 1<br>0,5 × 2 = 1,0 → 1</span>
         <p>Donc <span class="m">(0,6875)₁₀ = (0,1011)₂</span>. Et <span class="m">45,6875 = 101101,1011₂</span> : partie entière et partie fractionnaire se convertissent séparément.</p>
       </div>
@@ -699,10 +904,10 @@ const CHAPTERS = [
         <li>Ajouter 1, puis <strong>tronquer à n bits</strong>.</li>
       </ol>
       <div class="ex">
-        <span class="ex__tag">Exemple — −6 sur 8 bits</span>
+        <span class="ex__tag">Exemple : −6 sur 8 bits</span>
         <span class="formula">6 = 0000 0110<br>inversé = 1111 1001<br>+1 = 1111 1010</span>
         <p>Retour arrière : <span class="m">1111 1010</span> commence par 1, donc négatif. On réinverse et on ajoute 1 → <span class="m">0000 0110 = 6</span>, soit <span class="m">−6</span>.</p>
-        <p>Raccourci : <span class="m">valeur = −128 + bits restants = −128 + 122 = −6</span>.</p>
+        <p>Raccourci : <span class="m">valeur = −128 + bits restants</span> = <span class="m">−128 + 122 = −6</span>.</p>
       </div>
       <table class="basetbl">
         <caption>Lecture sur 4 bits (plage −8 à 7)</caption>
@@ -723,7 +928,7 @@ const CHAPTERS = [
       <p>On additionne <strong>bit à bit avec les retenues</strong>, comme en primaire. La retenue qui sort à gauche est <strong>abandonnée</strong> : le résultat reste sur <span class="m">n</span> bits.</p>
       <p>Soustraction : <span class="m">a − b = a + (−b)</span>, donc on ajoute le complément à 2 de <span class="m">b</span>. Aucun circuit de soustraction nécessaire, c’est tout l’intérêt du Cà2.</p>
       <div class="ex">
-        <span class="ex__tag">Exemple — 45 + (−19)</span>
+        <span class="ex__tag">Exemple : 45 + (−19)</span>
         <span class="formula">45  = 0010 1101<br>−19 = 1110 1101<br>somme = 1 0001 1010</span>
         <p>On jette la retenue sortante : <span class="m">0001 1010 = 26</span>. Correct, car <span class="m">45 − 19 = 26</span>.</p>
       </div>
@@ -751,7 +956,7 @@ const CHAPTERS = [
       <p><strong>ASCII</strong> : 7 bits utiles, 128 caractères. <strong>Latin-1</strong> étend à 8 bits (256). <strong>UTF-8</strong> code un point Unicode sur 1 à 4 octets : l’ASCII reste identique, un accent prend 2 octets.</p>
       <p>Repères à retenir : espace = <span class="m">32</span>, <span class="m">'0' = 48</span>, <span class="m">'A' = 65</span>, <span class="m">'a' = 97</span>. L’écart majuscule/minuscule vaut toujours <span class="m">32</span> : un seul bit change.</p>
       <div class="ex">
-        <span class="ex__tag">Exemple — BCD et taille d’une chaîne</span>
+        <span class="ex__tag">Exemple : BCD et taille d’une chaîne</span>
         <p>En <strong>BCD</strong>, chaque chiffre décimal occupe un quartet : <span class="m">42 → 0100 0010</span>. Ce n’est pas du binaire : <span class="m">42</span> en binaire vaut <span class="m">0010 1010</span>.</p>
         <p>La chaîne <span class="m">« Maths »</span> fait 5 caractères, donc 5 octets en ASCII/UTF-8 (aucun accent), soit 40 bits.</p>
       </div>
@@ -763,7 +968,7 @@ const CHAPTERS = [
       <span class="formula">1 kio = 1 024 o &nbsp;·&nbsp; 1 Mio = 1 048 576 o &nbsp;·&nbsp; 1 Gio ≈ 1,074 Go</span>
       <p><strong>Débit</strong> : les réseaux s’expriment en bits par seconde (Mb/s), les fichiers en octets (Mo). On divise par 8.</p>
       <div class="ex">
-        <span class="ex__tag">Exemple — téléchargement</span>
+        <span class="ex__tag">Exemple : téléchargement</span>
         <p>Connexion à <span class="m">100 Mb/s</span> → <span class="m">12,5 Mo/s</span>. Un fichier de <span class="m">4,5 Go</span> (≈ 4608 Mo) demande environ <span class="m">369 s</span>, soit 6 min 10 s.</p>
       </div>
       <p>Limites à connaître : 8 bits non signés → 255 · 16 bits → 65 535 · 32 bits → 4 294 967 295. Flottant 32 bits : 1 signe, 8 exposant (biais 127), 23 mantisse.</p>
@@ -896,7 +1101,7 @@ const CHAPTERS = [
       <p>Produit de la diagonale descendante <strong>moins</strong> produit de la diagonale montante. C’est un <strong>nombre</strong>, pas une matrice.</p>
       <div class="ex">
         <span class="ex__tag">Exemple</span>
-        <p><span class="m">det <span class="mx mx--2"><span>3</span><span>5</span><span>2</span><span>4</span></span> = 3×4 − 5×2 = 12 − 10 = 2</span>, donc la matrice est inversible.</p>
+        <p><span class="m">det <span class="mx mx--2"><span>3</span><span>5</span><span>2</span><span>4</span></span></span> = <span class="m">3×4 − 5×2 = 12 − 10 = 2</span>, donc la matrice est inversible.</p>
       </div>
       <p><strong>Propriétés</strong> :</p>
       <ul>
@@ -911,10 +1116,10 @@ const CHAPTERS = [
       <h3>Déterminant 3 × 3 : règle de Sarrus</h3>
       <p>On recopie les deux premières colonnes à droite, puis : <strong>trois diagonales descendantes moins trois diagonales montantes</strong>.</p>
       <div class="ex">
-        <span class="ex__tag">Exemple — déterminant de M</span>
+        <span class="ex__tag">Exemple : déterminant de M</span>
         <span class="formula">M = <span class="mx mx--3"><span>2</span><span>1</span><span>3</span><span>0</span><span>4</span><span>5</span><span>1</span><span>0</span><span>6</span></span></span>
         <span class="formula">descendantes : 2×4×6 + 1×5×1 + 3×0×0 = 48 + 5 + 0 = 53<br>montantes : 3×4×1 + 2×5×0 + 1×0×6 = 12 + 0 + 0 = 12<br>det M = 53 − 12 = 41</span>
-        <p><strong>Contrôle par cofacteurs</strong> (développement sur la première ligne) : <span class="m">2(24 − 0) − 1(0 − 5) + 3(0 − 4) = 48 + 5 − 12 = 41</span>. Les deux méthodes doivent donner le même résultat.</p>
+        <p><strong>Contrôle par cofacteurs</strong> (développement sur la première ligne) : <span class="m">2(24 − 0) − 1(0 − 5) + 3(0 − 4)</span> = <span class="m">48 + 5 − 12 = 41</span>. Les deux méthodes doivent donner le même résultat.</p>
       </div>
       <p>Le développement par cofacteurs devient indispensable en 4 × 4 ou dès qu’une ligne contient des zéros : on choisit la ligne ou la colonne la plus vide.</p>
     </div>
@@ -925,7 +1130,7 @@ const CHAPTERS = [
       <span class="formula">A⁻¹ = 1/(ad − bc) × <span class="mx mx--2"><span>d</span><span>−b</span><span>−c</span><span>a</span></span></span>
       <p>On échange <span class="m">a</span> et <span class="m">d</span>, on change le signe de <span class="m">b</span> et <span class="m">c</span>, puis on divise <strong>toute</strong> la matrice par le déterminant.</p>
       <div class="ex">
-        <span class="ex__tag">Exemple — A = </span>
+        <span class="ex__tag">Exemple : A = </span>
         <span class="formula">A = <span class="mx mx--2"><span>1</span><span>2</span><span>3</span><span>4</span></span> · det A = 4 − 6 = −2<br>A⁻¹ = 1/(−2) × <span class="mx mx--2"><span>4</span><span>−2</span><span>−3</span><span>1</span></span> = <span class="mx mx--2"><span>−2</span><span>1</span><span>1,5</span><span>−0,5</span></span></span>
         <p><strong>Vérification</strong> : <span class="m">A · A⁻¹ = I₂</span>. C’est le réflexe qui sauve des points, il suffit de 20 secondes.</p>
       </div>
@@ -941,7 +1146,7 @@ const CHAPTERS = [
         <li>Diviser par <span class="m">det A</span> : <span class="m">A⁻¹ = (1/det A) × com(A)ᵀ</span>.</li>
       </ol>
       <div class="ex">
-        <span class="ex__tag">Exemple — matrice triangulaire</span>
+        <span class="ex__tag">Exemple : matrice triangulaire</span>
         <span class="formula">T = <span class="mx mx--3"><span>1</span><span>2</span><span>3</span><span>0</span><span>1</span><span>4</span><span>0</span><span>0</span><span>1</span></span> · det T = 1×1×1 = 1<br>T⁻¹ = <span class="mx mx--3"><span>1</span><span>−2</span><span>5</span><span>0</span><span>1</span><span>−4</span><span>0</span><span>0</span><span>1</span></span></span>
         <p>Sur une triangulaire, le déterminant est le produit de la diagonale et l’inverse reste triangulaire : c’est le cas le plus simple à traiter en sujet.</p>
       </div>
@@ -953,7 +1158,7 @@ const CHAPTERS = [
       <span class="formula">Si det A ≠ 0 : X = A⁻¹ B</span>
       <p>On multiplie <span class="m">A⁻¹</span> <strong>à gauche</strong> des deux côtés. Écrire <span class="m">B A⁻¹</span> est faux, même quand les dimensions le permettent.</p>
       <div class="ex">
-        <span class="ex__tag">Exemple — 2x + y = 5 et x + 3y = 10</span>
+        <span class="ex__tag">Exemple : 2x + y = 5 et x + 3y = 10</span>
         <span class="formula">A = <span class="mx mx--2"><span>2</span><span>1</span><span>1</span><span>3</span></span> · det A = 6 − 1 = 5 ≠ 0</span>
         <p><strong>Cramer</strong> : <span class="m">x = det(Aₓ)/det(A)</span> où <span class="m">Aₓ</span> est <span class="m">A</span> avec la colonne des <span class="m">x</span> remplacée par <span class="m">B</span>.</p>
         <span class="formula">x = (5×3 − 1×10)/5 = 5/5 = 1<br>y = (2×10 − 5×1)/5 = 15/5 = 3</span>
@@ -967,7 +1172,7 @@ const CHAPTERS = [
       <p>Pour un graphe à <span class="m">n</span> sommets, la matrice d’adjacence <span class="m">M</span> est carrée d’ordre <span class="m">n</span> : <span class="m">mᵢⱼ = 1</span> s’il existe une arête de <span class="m">i</span> vers <span class="m">j</span>, sinon <span class="m">0</span>.</p>
       <p>Le coefficient <span class="m">(Mᵏ)ᵢⱼ</span> donne le <strong>nombre de chemins de longueur k</strong> allant de <span class="m">i</span> à <span class="m">j</span>. C’est la question classique du sujet SLAM.</p>
       <div class="ex">
-        <span class="ex__tag">Exemple — triangle complet</span>
+        <span class="ex__tag">Exemple : triangle complet</span>
         <span class="formula">M = <span class="mx mx--3"><span>0</span><span>1</span><span>1</span><span>1</span><span>0</span><span>1</span><span>1</span><span>1</span><span>0</span></span> &nbsp; M² = <span class="mx mx--3"><span>2</span><span>1</span><span>1</span><span>1</span><span>2</span><span>1</span><span>1</span><span>1</span><span>2</span></span></span>
         <p>De 1 vers 1 en 2 étapes : <span class="m">1→2→1</span> et <span class="m">1→3→1</span>, donc <span class="m">2</span> chemins. La diagonale compte les allers-retours, pas les boucles.</p>
       </div>
@@ -1021,10 +1226,12 @@ const CHAPTERS = [
   id: 'log',
   num: '04',
   title: 'Propositions',
-  tagline: 'Connecteurs, tables de vérité, implications, quantificateurs. Beaucoup de points faciles si les tables sont sues.',
+  tagline: 'Connecteurs et tables de vérité expliqués, implication et ses trois cousines, équivalences, quantificateurs et méthodes de démonstration avec exemples.',
   essentiel: `
     <div class="card">
-      <h3>Connecteurs</h3>
+      <h3>Proposition, connecteurs : le vocabulaire</h3>
+      <p>Une <strong>proposition</strong> est une phrase qui est soit vraie, soit fausse, sans ambiguïté. « 2 + 2 = 4 » est une proposition, « il fait beau » n’en est pas une (dépend du lieu et de l’heure).</p>
+      <p>Un <strong>connecteur</strong> combine des propositions pour en fabriquer une nouvelle. Il y en a cinq, et chacun a une table de vérité fixe.</p>
       <ul>
         <li><span class="m">¬p</span> : négation, inverse la valeur de vérité.</li>
         <li><span class="m">p ∧ q</span> : ET, vrai seulement si les deux sont vraies.</li>
@@ -1033,62 +1240,132 @@ const CHAPTERS = [
         <li><span class="m">p → q</span> : implication, fausse <strong>uniquement</strong> quand p est vraie et q fausse.</li>
         <li><span class="m">p ↔ q</span> : équivalence, vraie quand les deux ont la même valeur.</li>
       </ul>
+      <p><strong>Priorités de lecture</strong> : <span class="m">¬</span> d’abord, puis <span class="m">∧</span>, puis <span class="m">∨</span>, puis <span class="m">→</span>, et enfin <span class="m">↔</span>. En cas de doute, des parenthèses valent mieux qu’un pari.</p>
     </div>
+
     <div class="card">
-      <h3>Table de vérité</h3>
-      <p>Avec n propositions distinctes, la table a <span class="m">2ⁿ</span> lignes. On remplit les colonnes de gauche à droite, en alternant les vrai/faux (la variable la plus à gauche change le moins souvent).</p>
+      <h3>Table de vérité complète</h3>
+      <p>Avec <span class="m">n</span> propositions distinctes, la table a <span class="m">2ⁿ</span> lignes. On remplit les colonnes de gauche à droite, la variable la plus à gauche changeant le moins souvent.</p>
+      <table class="basetbl">
+        <caption>Les quatre combinaisons et les cinq connecteurs</caption>
+        <thead><tr><th>p</th><th>q</th><th>p ∧ q</th><th>p ∨ q</th><th>p ⊕ q</th><th>p → q</th><th>p ↔ q</th></tr></thead>
+        <tbody>
+          <tr><td>V</td><td>V</td><td>V</td><td>V</td><td>F</td><td>V</td><td>V</td></tr>
+          <tr><td>V</td><td>F</td><td>F</td><td>V</td><td>V</td><td>F</td><td>F</td></tr>
+          <tr><td>F</td><td>V</td><td>F</td><td>V</td><td>V</td><td>V</td><td>F</td></tr>
+          <tr><td>F</td><td>F</td><td>F</td><td>F</td><td>F</td><td>V</td><td>V</td></tr>
+        </tbody>
+      </table>
+      <p><strong>Comment retenir l’implication</strong> : <span class="m">p → q</span> est une promesse. « Si tu révises, tu réussis. » La promesse n’est rompue que dans un seul cas : tu as révisé et tu as échoué. Si tu n’as pas révisé, on ne peut rien te reprocher, la ligne est donc vraie par défaut (vérité vide).</p>
+      <p><strong>L’équivalence</strong> est vraie quand les deux propositions ont la même valeur : deux « oui » ou deux « non ». C’est <span class="m">(p → q) ∧ (q → p)</span>.</p>
     </div>
+
     <div class="card">
-      <h3>Implication et contraposée</h3>
-      <span class="formula">(p → q) ≡ (¬q → ¬p)</span>
-      <p>La contraposée est <strong>toujours équivalente</strong>. Ce n’est pas le cas de la réciproque <span class="m">(q → p)</span> ni du contraire <span class="m">(¬p → ¬q)</span>.</p>
-      <p>Vocabulaire : p est une condition <em>suffisante</em> pour q, q est une condition <em>nécessaire</em> pour p.</p>
+      <h3>Implication, réciproque, contraposée, contraire</h3>
+      <p>Ces quatre énoncés se ressemblent et un seul est équivalent à l’original.</p>
+      <table class="basetbl">
+        <caption>Autour de p → q</caption>
+        <thead><tr><th>Nom</th><th>Écriture</th><th>Équivalent ?</th></tr></thead>
+        <tbody>
+          <tr><td>Implication</td><td>p → q</td><td>référence</td></tr>
+          <tr><td>Contraposée</td><td>¬q → ¬p</td><td>Oui, toujours</td></tr>
+          <tr><td>Réciproque</td><td>q → p</td><td>Non</td></tr>
+          <tr><td>Contraire</td><td>¬p → ¬q</td><td>Non</td></tr>
+        </tbody>
+      </table>
+      <div class="ex">
+        <span class="ex__tag">Exemple : « s’il pleut, la route est mouillée »</span>
+        <p>Contraposée valide : « si la route est sèche, il ne pleut pas ». Réciproque fausse : une route peut être mouillée par un arroseur. Contraire faux : il peut ne pas pleuvoir et la route être mouillée.</p>
+      </div>
+      <p><strong>Nécessaire et suffisant</strong> : dans <span class="m">p → q</span>, p est une condition <em>suffisante</em> pour q (« il suffit de p pour avoir q »), et q est une condition <em>nécessaire</em> pour p (« sans q, pas de p »). L’équivalence <span class="m">p ↔ q</span> est nécessaire <strong>et</strong> suffisante.</p>
     </div>
+
     <div class="card">
-      <h3>Règles de De Morgan</h3>
-      <span class="formula">¬(p ∧ q) ≡ ¬p ∨ ¬q &nbsp;&nbsp;·&nbsp;&nbsp; ¬(p ∨ q) ≡ ¬p ∧ ¬q</span>
+      <h3>Équivalences à connaître par cœur</h3>
+      <p>Elles se démontrent avec une table de vérité, mais les connaître fait gagner tout le temps d’exercice.</p>
+      <span class="formula">p → q ≡ ¬p ∨ q</span>
+      <span class="formula">p → q ≡ ¬q → ¬p</span>
       <span class="formula">¬(p → q) ≡ p ∧ ¬q</span>
-      <p>La négation d’une implication garde l’antécédent vrai et nie la conclusion. C’est le piège numéro un.</p>
+      <span class="formula">¬(p ∧ q) ≡ ¬p ∨ ¬q &nbsp;·&nbsp; ¬(p ∨ q) ≡ ¬p ∧ ¬q</span>
+      <span class="formula">p ↔ q ≡ (p → q) ∧ (q → p)</span>
+      <span class="formula">p ⊕ q ≡ (p ∨ q) ∧ ¬(p ∧ q)</span>
+      <p>La première est la plus utile : elle transforme une implication en simple combinaison de OU et NON, donc en calcul.</p>
+      <div class="ex">
+        <span class="ex__tag">Vérification rapide de ¬(p → q)</span>
+        <p>Un seul cas rend <span class="m">p → q</span> fausse : p vraie et q fausse. Sa négation est donc vraie exactement dans ce cas, c’est-à-dire <span class="m">p ∧ ¬q</span>.</p>
+      </div>
     </div>
+
     <div class="card">
       <h3>Prédicats et quantificateurs</h3>
-      <p><span class="m">P(x)</span> est un prédicat : une phrase qui dépend de x et devient une proposition quand on fixe x.</p>
+      <p>Un <strong>prédicat</strong> <span class="m">P(x)</span> est une phrase qui dépend de <span class="m">x</span> et devient une proposition quand on fixe <span class="m">x</span>. Exemple : <span class="m">P(x) : « x² ≥ 0 »</span>.</p>
       <ul>
-        <li><span class="m">∀x ∈ E, P(x)</span> : pour tout x.</li>
-        <li><span class="m">∃x ∈ E, P(x)</span> : il existe au moins un x.</li>
-        <li><span class="m">∃!x ∈ E, P(x)</span> : il existe un unique x.</li>
+        <li><span class="m">∀x ∈ E, P(x)</span> : pour tout x de E, P(x) est vraie. Un seul contre-exemple suffit à rendre l’énoncé faux.</li>
+        <li><span class="m">∃x ∈ E, P(x)</span> : il existe au moins un x. Un seul exemple suffit à le rendre vrai.</li>
+        <li><span class="m">∃!x ∈ E, P(x)</span> : il existe un unique x, ni zéro ni deux.</li>
       </ul>
-      <span class="formula">¬(∀x, P(x)) ≡ ∃x, ¬P(x) &nbsp;&nbsp;·&nbsp;&nbsp; ¬(∃x, P(x)) ≡ ∀x, ¬P(x)</span>
-      <p>Nier un quantificateur, c’est <strong>changer le quantificateur et nier le prédicat</strong>.</p>
-      <p><span class="m">∀x ∃y</span> laisse y dépendre de x ; <span class="m">∃y ∀x</span> impose un même y pour tous les x. Ce n’est pas la même chose.</p>
+      <span class="formula">¬(∀x, P(x)) ≡ ∃x, ¬P(x)<br>¬(∃x, P(x)) ≡ ∀x, ¬P(x)</span>
+      <p><strong>Méthode</strong> : nier un quantificateur, c’est <strong>changer le symbole et nier le prédicat</strong>. Les deux opérations vont ensemble, sinon l’énoncé est faux.</p>
+      <div class="ex">
+        <span class="ex__tag">Exemple : deux quantificateurs</span>
+        <p>« <span class="m">∀x ∈ ℝ, ∃y ∈ ℝ, y &gt; x</span> » est vrai : pour chaque x, on choisit y = x + 1.</p>
+        <p>« <span class="m">∃y ∈ ℝ, ∀x ∈ ℝ, y &gt; x</span> » est faux : il faudrait un réel plus grand que tous les autres, ce qui n’existe pas.</p>
+        <p>L’ordre change tout : dans le premier cas, y dépend de x ; dans le second, un même y doit convenir à tous les x.</p>
+      </div>
     </div>
+
     <div class="card">
-      <h3>Types de raisonnement</h3>
+      <h3>Méthodes de démonstration</h3>
+      <p>Quatre schémas couvrent presque tous les exercices :</p>
+      <ol class="steps">
+        <li><strong>Direct</strong> : on suppose p vraie, on en déduit q par calcul ou propriétés. C’est le plus fréquent.</li>
+        <li><strong>Contraposée</strong> : on suppose ¬q et on démontre ¬p. Utile quand l’hypothèse de départ est peu exploitable.</li>
+        <li><strong>Absurde</strong> : on suppose p vraie <em>et</em> q fausse, on aboutit à une contradiction. Très efficace pour l’irrationalité ou l’unicité.</li>
+        <li><strong>Disjonction de cas</strong> : on sépare les possibilités (pair/impair, signe, positions) et on traite chacun.</li>
+      </ol>
+      <p>Pour <strong>réfuter</strong> un énoncé universel, un seul contre-exemple suffit : « tous les entiers pairs sont divisibles par 4 » tombe avec 6. Mais un exemple ne <strong>prouve</strong> jamais un « pour tout ».</p>
+      <div class="ex">
+        <span class="ex__tag">Mini-démonstration par contraposée</span>
+        <p>Énoncé : si <span class="m">n²</span> est impair alors <span class="m">n</span> est impair.</p>
+        <p>Contraposée : si <span class="m">n</span> est pair, alors <span class="m">n = 2k</span> et <span class="m">n² = 4k² = 2(2k²)</span>, donc <span class="m">n²</span> est pair. CQFD.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Tautologies, contradictions, satisfiabilité</h3>
       <ul>
-        <li><strong>Direct</strong> : on suppose p et on démontre q.</li>
-        <li><strong>Contraposée</strong> : on suppose ¬q et on démontre ¬p. Même implication.</li>
-        <li><strong>Absurde</strong> : on suppose p et ¬q, on arrive à une contradiction.</li>
-        <li><strong>Contre-exemple</strong> : un seul cas qui échoue suffit à réfuter un "pour tout".</li>
-        <li><strong>Disjonction de cas</strong> : on sépare les possibilités et on traite chacune.</li>
+        <li><strong>Tautologie</strong> : vraie sur toutes les lignes. Exemples : <span class="m">p ∨ ¬p</span> (tiers exclu), <span class="m">p → p</span>, <span class="m">(p ∧ (p → q)) → q</span>.</li>
+        <li><strong>Contradiction</strong> : fausse sur toutes les lignes. Exemple : <span class="m">p ∧ ¬p</span>.</li>
+        <li><strong>Satisfiable</strong> : vraie au moins une fois. Toute tautologie est satisfiable, l’inverse est faux.</li>
       </ul>
+      <p>Deux propositions sont <strong>équivalentes</strong> quand <span class="m">p ↔ q</span> est une tautologie : même colonne dans la table de vérité.</p>
+      <p>Application SLAM : une condition de test qui donne toujours vrai (<span class="m">if (x &gt; 0 || x ≤ 0)</span>) est une tautologie inutile ; toujours faux, c’est du code mort.</p>
     </div>`,
   pieges: `
-    <div class="trap"><span class="trap__flag">¬(p→q)</span><p>La négation n’est pas <span class="m">¬p → ¬q</span> ni <span class="m">¬p ∧ ¬q</span>. C’est <span class="m">p ∧ ¬q</span> : l’hypothèse tient, la conclusion tombe.</p></div>
-    <div class="trap"><span class="trap__flag">réciproque</span><p>"S’il pleut, la route est mouillée" n’autorise pas "si la route est mouillée, il pleut". Seule la contraposée est valide : route sèche donc pas de pluie.</p></div>
-    <div class="trap"><span class="trap__flag">∨</span><p>Le "ou" mathématique est inclusif : <span class="m">p ∨ q</span> est vrai si les deux sont vraies. Le "ou bien" exclusif s’écrit ⊕.</p></div>
+    <div class="trap"><span class="trap__flag">¬(p→q)</span><p>La négation n’est ni <span class="m">¬p → ¬q</span>, ni <span class="m">¬p ∧ ¬q</span>. C’est <span class="m">p ∧ ¬q</span> : l’hypothèse tient, la conclusion tombe.</p></div>
+    <div class="trap"><span class="trap__flag">réciproque</span><p>« S’il pleut, la route est mouillée » n’autorise pas « si la route est mouillée, il pleut ». Seule la contraposée est valide.</p></div>
+    <div class="trap"><span class="trap__flag">∨</span><p>Le OU mathématique est inclusif : <span class="m">p ∨ q</span> est vrai si les deux sont vraies. Le « ou bien » exclusif s’écrit ⊕.</p></div>
     <div class="trap"><span class="trap__flag">quantif</span><p>Nier <span class="m">∀x, P(x)</span> donne <span class="m">∃x, ¬P(x)</span>. Oublier de nier le prédicat est une faute classique.</p></div>
-    <div class="trap"><span class="trap__flag">∀∃</span><p>"Pour tout x il existe y tel que y > x" est vrai dans ℝ. "Il existe y tel que pour tout x, y > x" est faux. L’ordre change tout.</p></div>
-    <div class="trap"><span class="trap__flag">2ⁿ</span><p>Une table de vérité à 3 variables a 8 lignes, pas 6. On compte les variables, pas les connecteurs.</p></div>`,
+    <div class="trap"><span class="trap__flag">∀∃</span><p>« Pour tout x il existe y tel que y &gt; x » est vrai dans ℝ. « Il existe y tel que pour tout x, y &gt; x » est faux. L’ordre change le sens.</p></div>
+    <div class="trap"><span class="trap__flag">2ⁿ</span><p>Une table à 3 variables a 8 lignes, pas 6. On compte les variables, pas les connecteurs ni les colonnes.</p></div>
+    <div class="trap"><span class="trap__flag">exemple</span><p>Un exemple vérifie un « il existe », jamais un « pour tout ». Confondre les deux est la faute de logique la plus coûteuse en BTS.</p></div>`,
   calc: 'log',
   cards: [
     { r: 'p ∧ q', v: 'Vrai seulement si p et q sont vraies.' },
     { r: 'p ∨ q', v: 'Faux seulement si p et q sont fausses.' },
     { r: 'p → q', v: 'Fausse uniquement pour p vraie et q fausse.' },
+    { r: 'p ↔ q', v: 'Vraie quand p et q ont la même valeur.' },
+    { r: 'p → q ≡', v: '¬p ∨ q.' },
     { r: 'Contraposée', v: '(p → q) ≡ (¬q → ¬p), toujours.' },
+    { r: 'Réciproque', v: 'q → p, non équivalente à p → q.' },
     { r: 'De Morgan', v: '¬(p ∧ q) ≡ ¬p ∨ ¬q ; ¬(p ∨ q) ≡ ¬p ∧ ¬q.' },
     { r: '¬(p → q)', v: 'p ∧ ¬q.' },
     { r: '¬∀x P(x)', v: '∃x ¬P(x).' },
-    { r: 'Tautologie', v: 'Proposition vraie sur toutes les lignes de sa table.' }
+    { r: '¬∃x P(x)', v: '∀x ¬P(x).' },
+    { r: 'Suffisant / nécessaire', v: 'p suffit à q ; q est nécessaire à p.' },
+    { r: 'Tautologie', v: 'Vraie sur toutes les lignes, ex. p ∨ ¬p.' },
+    { r: 'Contradiction', v: 'Fausse sur toutes les lignes, ex. p ∧ ¬p.' },
+    { r: 'Réfuter ∀', v: 'Un seul contre-exemple suffit.' }
   ],
   quiz: [
     { q: 'p → q est fausse dans combien de cas ?', opts: ['1', '2', '3', '0'], a: 0, why: 'Un seul cas : p vraie et q fausse. Toutes les autres lignes donnent vrai.' },
@@ -1097,89 +1374,210 @@ const CHAPTERS = [
     { q: '(p → q) est équivalent à :', opts: ['¬q → ¬p', 'q → p', '¬p → ¬q', 'p ∧ q'], a: 0, why: 'C’est la contraposée, toujours équivalente.' },
     { q: 'La négation de ∀x ∈ ℝ, x² ≥ 0 est :', opts: ['∃x ∈ ℝ, x² < 0', '∀x ∈ ℝ, x² < 0', '∃x ∈ ℝ, x² ≥ 0', '¬∃x ∈ ℝ, x² ≥ 0'], a: 0, why: 'On change ∀ en ∃ et on nie le prédicat : ≥ devient <.' },
     { q: '¬(p ∨ q) est équivalent à :', opts: ['¬p ∧ ¬q', '¬p ∨ ¬q', 'p ∧ q', 'p → q'], a: 0, why: 'De Morgan : la négation d’un OU est un ET des négations.' },
-    { q: 'Pour réfuter "tous les entiers pairs sont divisibles par 4", il suffit de :', opts: ['Donner un contre-exemple comme 6', 'Démontrer la contraposée', 'Raisonner par absurde', 'Calculer 2⁴'], a: 0, why: 'Un contre-exemple suffit à rendre un énoncé universel faux.' },
-    { q: '"Il existe un réel y tel que pour tout x, y > x" est :', opts: ['Faux', 'Vrai', 'Vrai seulement sur ℝ⁺', 'Équivalent à ∀x∃y, y > x'], a: 0, why: 'Aucun réel n’est plus grand que tous les autres. L’ordre des quantificateurs change le sens.' }
+    { q: 'p → q est aussi équivalent à :', opts: ['¬p ∨ q', 'p ∨ ¬q', '¬p ∧ q', 'p ∧ ¬q'], a: 0, why: 'L’implication est fausse seulement si p est vraie et q fausse, exactement comme ¬p ∨ q.' },
+    { q: 'Pour réfuter « tous les entiers pairs sont divisibles par 4 », il suffit de :', opts: ['Donner un contre-exemple comme 6', 'Démontrer la contraposée', 'Raisonner par absurde', 'Calculer 2⁴'], a: 0, why: 'Un contre-exemple suffit à rendre un énoncé universel faux.' },
+    { q: '« Il existe un réel y tel que pour tout x, y > x » est :', opts: ['Faux', 'Vrai', 'Vrai seulement sur ℝ⁺', 'Équivalent à ∀x∃y, y > x'], a: 0, why: 'Aucun réel n’est plus grand que tous les autres. L’ordre des quantificateurs change le sens.' },
+    { q: '« p est une condition nécessaire pour q » s’écrit :', opts: ['q → p', 'p → q', 'p ↔ q', '¬p → q'], a: 0, why: 'Si q est réalisée, alors p doit l’être : q → p. p est nécessaire à q.' },
+    { q: 'La réciproque de « si n est pair alors n² est pair » est :', opts: ['Si n² est pair alors n est pair', 'Si n est impair alors n² est impair', 'Si n² est impair alors n est impair', 'Si n est pair alors n² est impair'], a: 0, why: 'La réciproque échange hypothèse et conclusion. Elle se trouve être vraie ici, mais ce n’est pas automatique.' },
+    { q: '¬(p ↔ q) est vrai quand :', opts: ['Les deux propositions diffèrent', 'Les deux sont vraies', 'Les deux sont fausses', 'Jamais'], a: 0, why: 'L’équivalence est vraie quand les valeurs coïncident ; sa négation est vraie quand elles diffèrent.' },
+    { q: 'p ∨ ¬p est :', opts: ['Une tautologie', 'Une contradiction', 'Contingente', 'Fausse'], a: 0, why: 'Vraie sur les deux lignes possibles, c’est le principe du tiers exclu.' }
   ]
 },
 {
   id: 'ens',
   num: '05',
   title: 'Ensembles',
-  tagline: 'Appartenance, inclusion, opérations, cardinaux, ensemble des parties. Le chapitre à consolider depuis zéro, unions comprises.',
+  tagline: 'Écritures, appartenance contre inclusion, opérations calculées, méthode des régions, cardinaux à deux et trois ensembles, partitions et ensemble des parties.',
   essentiel: `
     <div class="card">
       <h3>Définir un ensemble</h3>
-      <p>Un ensemble est une collection d’objets appelés éléments. On le note avec une majuscule : <span class="m">A, B, E</span>.</p>
+      <p>Un ensemble est une collection d’objets appelés éléments. On le note avec une majuscule : <span class="m">A, B, E</span>. L’univers <span class="m">E</span> est l’ensemble de référence dans lequel on travaille.</p>
       <ul>
         <li><strong>En extension</strong> : on liste les éléments, <span class="m">A = {2 ; 3 ; 5}</span>.</li>
-        <li><strong>En compréhension</strong> : on donne une propriété, <span class="m">A = {x ∈ ℕ | x &lt; 4} = {0 ; 1 ; 2 ; 3}</span>.</li>
+        <li><strong>En compréhension</strong> : on donne une propriété, <span class="m">A = {x ∈ ℕ | x &lt; 4}</span> = <span class="m">{0 ; 1 ; 2 ; 3}</span>.</li>
         <li>L’ordre et les répétitions n’ont aucune importance : <span class="m">{1 ; 2} = {2 ; 1 ; 1}</span>.</li>
       </ul>
-      <p>L’ensemble vide <span class="m">∅</span> n’a aucun élément : <span class="m">|∅| = 0</span>. Attention, <span class="m">{∅}</span> n’est pas vide : il contient un élément (l’ensemble vide), donc <span class="m">|{∅}| = 1</span>.</p>
+      <p>L’ensemble vide <span class="m">∅</span> n’a aucun élément : <span class="m">|∅| = 0</span>. Attention, <span class="m">{∅}</span> n’est pas vide : il contient un élément, qui est l’ensemble vide, donc <span class="m">|{∅}| = 1</span>.</p>
+      <p><strong>Image mentale</strong> : <span class="m">∅</span> est une boîte vide ; <span class="m">{∅}</span> est une boîte qui contient une boîte vide. Ce ne sont pas les mêmes boîtes.</p>
     </div>
+
     <div class="card">
-      <h3>Appartenance et inclusion</h3>
-      <p><span class="m">x ∈ A</span> : x est un élément de A. <span class="m">B ⊆ A</span> : B est un ensemble contenu dans A.</p>
-      <span class="formula">2 ∈ {2 ; 3} est vrai &nbsp;·&nbsp; {2} ⊆ {2 ; 3} est vrai &nbsp;·&nbsp; {2} ∈ {2 ; 3} est faux</span>
-      <p>Pour l’égalité, on procède par <strong>double inclusion</strong> : on montre <span class="m">A ⊆ B</span> puis <span class="m">B ⊆ A</span>.</p>
-      <p>Pour tout ensemble A : <span class="m">∅ ⊆ A</span> et <span class="m">A ⊆ A</span>.</p>
-    </div>
-    <div class="card">
-      <h3>Opérations</h3>
+      <h3>Appartenance contre inclusion</h3>
+      <p>Deux symboles, deux niveaux différents, et c’est la confusion numéro un.</p>
       <ul>
-        <li><strong>Intersection</strong> <span class="m">A ∩ B</span> : éléments présents dans les deux.</li>
-        <li><strong>Réunion</strong> <span class="m">A ∪ B</span> : éléments présents dans l’un au moins.</li>
-        <li><strong>Différence</strong> <span class="m">A ∖ B</span> : éléments de A qui ne sont pas dans B.</li>
-        <li><strong>Complémentaire</strong> <span class="m">Ā = E ∖ A</span> : ce qui reste dans l’univers E.</li>
-        <li><strong>Différence symétrique</strong> <span class="m">A Δ B</span> : éléments d’un seul des deux.</li>
+        <li><span class="m">x ∈ A</span> : <span class="m">x</span> est un <strong>élément</strong>. À gauche, un objet ; à droite, un ensemble.</li>
+        <li><span class="m">B ⊆ A</span> : <span class="m">B</span> est un <strong>sous-ensemble</strong> de <span class="m">A</span>. Les deux côtés sont des ensembles, et tout élément de B est dans A.</li>
       </ul>
-      <span class="formula">A Δ B = (A ∪ B) ∖ (A ∩ B) = (A ∖ B) ∪ (B ∖ A)</span>
-      <p><strong>De Morgan</strong> : <span class="m">(A ∪ B)ᶜ = Aᶜ ∩ Bᶜ</span> et <span class="m">(A ∩ B)ᶜ = Aᶜ ∪ Bᶜ</span>.</p>
-      <p><strong>Distributivité</strong> : <span class="m">A ∩ (B ∪ C) = (A ∩ B) ∪ (A ∩ C)</span>.</p>
+      <span class="formula">2 ∈ {2 ; 3} vrai &nbsp;·&nbsp; {2} ⊆ {2 ; 3} vrai<br>{2} ∈ {2 ; 3} faux &nbsp;·&nbsp; 2 ⊆ {2 ; 3} faux</span>
+      <p>Repère : à droite de <span class="m">∈</span> il y a <strong>toujours</strong> un ensemble ; à gauche, un élément. Un ensemble peut lui-même être élément d’un ensemble d’ensembles, mais ce n’est pas le cas ici.</p>
+      <p><strong>Pour tout ensemble A</strong> : <span class="m">∅ ⊆ A</span> et <span class="m">A ⊆ A</span>.</p>
     </div>
+
     <div class="card">
-      <h3>Cardinaux</h3>
+      <h3>Prouver une inclusion, prouver une égalité</h3>
+      <p><strong>Inclusion <span class="m">A ⊆ B</span></strong> : on prend un élément quelconque <span class="m">x</span> de <span class="m">A</span> et on démontre qu’il appartient à <span class="m">B</span>. C’est ce qu’on appelle le raisonnement élément par élément.</p>
+      <p><strong>Égalité <span class="m">A = B</span></strong> : on procède par <strong>double inclusion</strong>, <span class="m">A ⊆ B</span> puis <span class="m">B ⊆ A</span>. Une seule inclusion ne prouve rien de plus qu’un contenant.</p>
+      <div class="ex">
+        <span class="ex__tag">Exemple : A ∩ (B ∪ C) ⊆ (A ∩ B) ∪ (A ∩ C)</span>
+        <p>Soit <span class="m">x ∈ A ∩ (B ∪ C)</span>. Alors <span class="m">x ∈ A</span> et <span class="m">x ∈ B ∪ C</span>, donc <span class="m">x ∈ B</span> ou <span class="m">x ∈ C</span>.</p>
+        <p>Si <span class="m">x ∈ B</span> : <span class="m">x ∈ A ∩ B</span>. Si <span class="m">x ∈ C</span> : <span class="m">x ∈ A ∩ C</span>. Dans les deux cas, <span class="m">x</span> est dans l’union des deux intersections.</p>
+        <p>L’autre inclusion se démontre de la même façon : c’est la distributivité de <span class="m">∩</span> sur <span class="m">∪</span>.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Opérations : les quatre à ne pas mélanger</h3>
+      <ul>
+        <li><strong>Intersection</strong> <span class="m">A ∩ B</span> : éléments présents dans <strong>les deux</strong>. Le « et ».</li>
+        <li><strong>Réunion</strong> <span class="m">A ∪ B</span> : éléments présents dans <strong>au moins un</strong>. Le « ou ».</li>
+        <li><strong>Différence</strong> <span class="m">A ∖ B</span> : éléments de <span class="m">A</span> qui ne sont <strong>pas</strong> dans <span class="m">B</span>. Unilatéral : <span class="m">A ∖ B ≠ B ∖ A</span>.</li>
+        <li><strong>Complémentaire</strong> <span class="m">Ā = E ∖ A</span> : tout ce qui est dans l’univers mais pas dans <span class="m">A</span>.</li>
+        <li><strong>Différence symétrique</strong> <span class="m">A Δ B</span> : éléments d’un seul des deux, l’intersection est exclue.</li>
+      </ul>
+      <div class="ex">
+        <span class="ex__tag">Exemple calculé : A = {1;2;3;4}, B = {3;4;5}, E = {1;2;3;4;5;6}</span>
+        <span class="formula">A ∩ B = {3 ; 4}<br>A ∪ B = {1 ; 2 ; 3 ; 4 ; 5}<br>A ∖ B = {1 ; 2} &nbsp;·&nbsp; B ∖ A = {5}<br>A Δ B = {1 ; 2 ; 5}<br>Ā = {5 ; 6}</span>
+        <p>Le complémentaire dépend de l’univers : dans <span class="m">E = {1;2;3;4;5}</span>, <span class="m">Ā</span> vaudrait seulement <span class="m">{5}</span>.</p>
+      </div>
+      <span class="formula">A Δ B = (A ∪ B) ∖ (A ∩ B)<br>= (A ∖ B) ∪ (B ∖ A)</span>
+    </div>
+
+    <div class="card">
+      <h3>Lois de calcul</h3>
+      <p>Elles se démontrent élément par élément, mais se retiennent comme des règles d’algèbre.</p>
+      <span class="formula">A ∩ (B ∪ C) = (A ∩ B) ∪ (A ∩ C)<br>A ∪ (B ∩ C) = (A ∪ B) ∩ (A ∪ C)</span>
+      <span class="formula">(A ∪ B)ᶜ = Aᶜ ∩ Bᶜ &nbsp;·&nbsp; (A ∩ B)ᶜ = Aᶜ ∪ Bᶜ</span>
+      <span class="formula">A ∪ A = A &nbsp;·&nbsp; A ∩ A = A &nbsp;·&nbsp; A ∪ ∅ = A &nbsp;·&nbsp; A ∩ ∅ = ∅</span>
+      <p><strong>De Morgan en mots</strong> : « ne pas être dans A ou B » revient à « ne pas être dans A et ne pas être dans B ». Le OU devient ET, le ET devient OU.</p>
+      <p><strong>Absorption</strong> : <span class="m">A ∪ (A ∩ B) = A</span> et <span class="m">A ∩ (A ∪ B) = A</span>.</p>
+    </div>
+
+    <div class="card">
+      <h3>Méthode des régions (diagramme de Venn)</h3>
+      <p>Pour un problème à deux ou trois ensembles, on ne devine pas : on <strong>remplit les régions</strong>.</p>
+      <ol class="steps">
+        <li>Placer le nombre de l’intersection <strong>la plus profonde</strong> en premier (<span class="m">A ∩ B ∩ C</span>).</li>
+        <li>En déduire les intersections deux à deux en retirant le centre.</li>
+        <li>En déduire les parties « seulement A », « seulement B » en retirant ce qui a déjà été compté.</li>
+        <li>Vérifier que chaque ensemble total redonne bien le nombre annoncé.</li>
+        <li>Le reste de l’univers se calcule par différence avec le total.</li>
+      </ol>
+      <div class="ex">
+        <span class="ex__tag">Exemple à deux ensembles : 40 étudiants</span>
+        <p>25 font de l’anglais, 18 de l’espagnol, 10 les deux.</p>
+        <span class="formula">anglais seul = 25 − 10 = 15<br>espagnol seul = 18 − 10 = 8<br>au moins une langue = 15 + 8 + 10 = 33<br>aucune = 40 − 33 = 7</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Cardinaux : compter sans compter deux fois</h3>
       <span class="formula">|A ∪ B| = |A| + |B| − |A ∩ B|</span>
-      <p>On retire l’intersection parce qu’elle est comptée deux fois. Avec trois ensembles :</p>
-      <span class="formula">|A ∪ B ∪ C| = Σ|A| − Σ|A ∩ B| + |A ∩ B ∩ C|</span>
-      <p>Produit cartésien : <span class="m">A × B = {(a ; b) | a ∈ A, b ∈ B}</span> et <span class="m">|A × B| = |A| × |B|</span>.</p>
-      <p><strong>Ensemble des parties</strong> <span class="m">P(E)</span> : tous les sous-ensembles de E, <span class="m">∅</span> et E compris.</p>
-      <span class="formula">|P(E)| = 2ⁿ &nbsp;où n = |E|</span>
+      <p>On retire l’intersection parce que ses éléments sont présents dans <span class="m">|A|</span> <strong>et</strong> dans <span class="m">|B|</span>. Sans cette correction, ils sont comptés deux fois.</p>
+      <p>Avec trois ensembles, on corrige deux fois dans l’autre sens :</p>
+      <span class="formula">|A ∪ B ∪ C| = |A| + |B| + |C|<br>− |A ∩ B| − |A ∩ C| − |B ∩ C|<br>+ |A ∩ B ∩ C|</span>
+      <div class="ex">
+        <span class="ex__tag">Exemple à trois ensembles : 40 étudiants</span>
+        <p>Anglais 25, espagnol 18, allemand 12. Intersections : A∩E = 10, A∩D = 6, E∩D = 4, les trois = 3.</p>
+        <span class="formula">|A ∪ E ∪ D| = 25 + 18 + 12 − 10 − 6 − 4 + 3 = 38</span>
+        <p>Aucun cours : <span class="m">40 − 38 = 2</span>. Détail des régions : anglais seul 12, espagnol seul 7, allemand seul 5, A∩E seul 7, A∩D seul 3, E∩D seul 1, les trois 3. Total : <span class="m">38</span>.</p>
+      </div>
+      <p><strong>Complémentaire</strong> : <span class="m">|Ā| = |E| − |A|</span>. C’est le calcul le plus rapide quand l’énoncé donne le total.</p>
     </div>
+
     <div class="card">
-      <h3>Lecture d’un énoncé type</h3>
-      <p>"Dans un groupe de 40 étudiants, 25 font de l’anglais, 18 de l’espagnol, 10 les deux."</p>
-      <p>Au moins une langue : <span class="m">25 + 18 − 10 = 33</span>. Aucune : <span class="m">40 − 33 = 7</span>. Anglais seulement : <span class="m">25 − 10 = 15</span>.</p>
+      <h3>Partitions et ensembles disjoints</h3>
+      <p>Deux ensembles sont <strong>disjoints</strong> quand <span class="m">A ∩ B = ∅</span> : aucun élément commun.</p>
+      <p>Une <strong>partition</strong> de <span class="m">E</span> est un découpage en sous-ensembles non vides, deux à deux disjoints, dont la réunion vaut <span class="m">E</span>.</p>
+      <span class="formula">Si A₁, …, Aₖ forment une partition : |E| = |A₁| + … + |Aₖ|</span>
+      <p>Exemple concret en programmation : les restes modulo 3 découpent <span class="m">ℤ</span> en trois classes <span class="m">{0}, {1}, {2}</span>, disjointes et exhaustives. C’est exactement ce qui permet un <span class="m">switch</span> ou un routage par hash sans trou.</p>
+      <p>Disjoints ne veut pas dire complémentaires : deux ensembles disjoints peuvent laisser des éléments de côté. Une partition, elle, couvre tout.</p>
+    </div>
+
+    <div class="card">
+      <h3>Produit cartésien</h3>
+      <p><span class="m">A × B</span> est l’ensemble des <strong>couples</strong> ordonnés <span class="m">(a ; b)</span> avec <span class="m">a ∈ A</span> et <span class="m">b ∈ B</span>.</p>
+      <span class="formula">A × B = {(a ; b) | a ∈ A, b ∈ B}<br>|A × B| = |A| × |B|</span>
+      <p><strong>Couple ordonné</strong> : <span class="m">(1 ; 2) ≠ (2 ; 1)</span>, contrairement à un ensemble. <span class="m">A × B ≠ B × A</span> en général, même si les cardinaux sont égaux.</p>
+      <div class="ex">
+        <span class="ex__tag">Exemple et lien SLAM</span>
+        <p><span class="m">A = {1 ; 2}</span> et <span class="m">B = {x ; y}</span> donnent <span class="m">A × B = {(1;x), (1;y), (2;x), (2;y)}</span>, soit 4 couples.</p>
+        <p>En base de données, une jointure entre deux tables commence par un produit cartésien, puis on filtre avec la condition de rapprochement. Savoir que le produit seul est <span class="m">|A| × |B|</span> lignes explique pourquoi une jointure mal écrite explose en volume.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Ensemble des parties</h3>
+      <p><span class="m">P(E)</span> est l’ensemble de <strong>tous les sous-ensembles</strong> de <span class="m">E</span>, y compris <span class="m">∅</span> et <span class="m">E</span> lui-même.</p>
+      <div class="ex">
+        <span class="ex__tag">Exemple : E = {a ; b}</span>
+        <span class="formula">P(E) = { ∅ ; {a} ; {b} ; {a ; b} } &nbsp;→&nbsp; 4 éléments</span>
+        <p>Pour <span class="m">E = {a}</span> : <span class="m">P(E) = {∅ ; {a}}</span>, soit 2 éléments.</p>
+      </div>
+      <span class="formula">|P(E)| = 2ⁿ &nbsp;où n = |E|</span>
+      <p><strong>Pourquoi 2ⁿ</strong> : pour construire un sous-ensemble, chaque élément de <span class="m">E</span> a deux possibilités, être pris ou ne pas être pris. On multiplie ces choix : <span class="m">2 × 2 × … × 2 = 2ⁿ</span>.</p>
+      <p>Conséquence : <span class="m">P(E)</span> contient <span class="m">2ⁿ − 1</span> sous-ensembles non vides, et <span class="m">2ⁿ − 2</span> sous-ensembles stricts (hors <span class="m">∅</span> et <span class="m">E</span>).</p>
+    </div>
+
+    <div class="card">
+      <h3>Décomposer un énoncé : trois questions</h3>
+      <ol class="steps">
+        <li><strong>Quel est l’univers ?</strong> Le total annoncé (groupe, population, table). Sans lui, on ne peut pas calculer de complémentaire.</li>
+        <li><strong>Quels sont les ensembles et leurs intersections ?</strong> Lister les données, puis remplir les régions de l’intérieur vers l’extérieur.</li>
+        <li><strong>Que demande-t-on exactement ?</strong> « au moins un », « aucun », « seulement », « les deux ». Ce sont quatre calculs différents.</li>
+      </ol>
+      <p>Traduction des formulations :</p>
+      <ul>
+        <li>« au moins un » → <span class="m">|A ∪ B|</span></li>
+        <li>« aucun » → <span class="m">|(A ∪ B)ᶜ| = |E| − |A ∪ B|</span></li>
+        <li>« seulement A » → <span class="m">|A| − |A ∩ B|</span></li>
+        <li>« les deux » → <span class="m">|A ∩ B|</span></li>
+        <li>« un seul des deux » → <span class="m">|A Δ B|</span></li>
+      </ul>
     </div>`,
   pieges: `
     <div class="trap"><span class="trap__flag">∖ ≠ Δ</span><p><span class="m">A ∖ B</span> est unilatéral, <span class="m">A Δ B</span> est symétrique. Avec A = {1;2} et B = {2;3} : <span class="m">A ∖ B = {1}</span> mais <span class="m">A Δ B = {1;3}</span>.</p></div>
     <div class="trap"><span class="trap__flag">cardinal</span><p>Écrire <span class="m">|A ∪ B| = |A| + |B|</span> est faux dès que l’intersection n’est pas vide : les éléments communs sont comptés deux fois. <span class="fix">Toujours retirer |A ∩ B|.</span></p></div>
     <div class="trap"><span class="trap__flag">∈ / ⊆</span><p>Un élément va dans un ensemble, un ensemble va dans un ensemble. <span class="m">{2} ⊆ {2;3}</span> est vrai, <span class="m">{2} ∈ {2;3}</span> est faux.</p></div>
-    <div class="trap"><span class="trap__flag">∅</span><p><span class="m">∅ ≠ {∅}</span>. Une boîte vide n’est pas la même chose qu’une boîte qui contient une boîte vide.</p></div>
+    <div class="trap"><span class="trap__flag">∅</span><p><span class="m">∅ ≠ {∅}</span>. Une boîte vide n’est pas une boîte qui contient une boîte vide.</p></div>
     <div class="trap"><span class="trap__flag">2ⁿ</span><p>L’ensemble des parties compte les sous-ensembles, pas les éléments. Pour <span class="m">|E| = 3</span>, <span class="m">|P(E)| = 8</span>, et non 3.</p></div>
-    <div class="trap"><span class="trap__flag">trois ensembles</span><p>La formule à trois termes ajoute <span class="m">|A ∩ B ∩ C|</span> à la fin. L’oublier fausse le résultat.</p></div>`,
+    <div class="trap"><span class="trap__flag">trois ensembles</span><p>La formule à trois termes ajoute <span class="m">|A ∩ B ∩ C|</span> à la fin. L’oublier fausse le résultat.</p></div>
+    <div class="trap"><span class="trap__flag">univers</span><p>Le complémentaire dépend de <span class="m">E</span>. <span class="m">Ā</span> n’a pas de sens si l’univers n’est pas précisé : {1;2;3} complété dans ℕ n’est pas le même ensemble que dans {1;2;3;4}.</p></div>
+    <div class="trap"><span class="trap__flag">disjoints</span><p>Disjoints n’implique pas complémentaires. Deux ensembles peuvent être disjoints et laisser des éléments hors de leur union.</p></div>`,
   calc: 'ens',
   cards: [
     { r: '∈', v: 'Appartenance : un élément dans un ensemble.' },
-    { r: '⊆', v: 'Inclusion : un ensemble contenu dans un autre.' },
+    { r: '⊆', v: 'Inclusion : tout élément de B est dans A.' },
+    { r: 'A = B', v: 'Se démontre par double inclusion.' },
     { r: '∅', v: 'Ensemble vide, cardinal 0. Et ∅ ≠ {∅}.' },
+    { r: 'A ∩ B', v: 'Éléments communs aux deux (ET).' },
+    { r: 'A ∪ B', v: 'Éléments de l’un au moins (OU inclusif).' },
     { r: 'A ∖ B', v: 'Éléments de A qui ne sont pas dans B.' },
     { r: 'A Δ B', v: '(A ∪ B) ∖ (A ∩ B), éléments d’un seul ensemble.' },
     { r: 'De Morgan', v: '(A ∪ B)ᶜ = Aᶜ ∩ Bᶜ et (A ∩ B)ᶜ = Aᶜ ∪ Bᶜ.' },
     { r: '|A ∪ B|', v: '|A| + |B| − |A ∩ B|.' },
-    { r: '|P(E)|', v: '2ⁿ avec n = |E|.' }
+    { r: '|A ∪ B ∪ C|', v: 'Somme des trois − sommes des paires + triple intersection.' },
+    { r: '|Ā|', v: '|E| − |A|.' },
+    { r: '|A × B|', v: '|A| × |B|, couples ordonnés.' },
+    { r: '|P(E)|', v: '2ⁿ avec n = |E|.' },
+    { r: 'Partition', v: 'Sous-ensembles non vides, disjoints, dont l’union vaut E.' }
   ],
   quiz: [
     { q: '|A| = 12, |B| = 9, |A ∩ B| = 4. Combien vaut |A ∪ B| ?', opts: ['17', '21', '25', '13'], a: 0, why: '12 + 9 − 4 = 17. L’intersection est comptée deux fois, donc on la retire une fois.' },
     { q: 'Parmi ces écritures, laquelle est vraie ?', opts: ['{2} ⊆ {2 ; 3}', '{2} ∈ {2 ; 3}', '2 ⊆ {2 ; 3}', '∅ ∈ {2 ; 3}'], a: 0, why: 'L’ensemble {2} est bien contenu dans {2 ; 3}. En revanche {2} n’est pas un élément de cet ensemble.' },
     { q: 'Si |E| = 4, combien vaut |P(E)| ?', opts: ['16', '8', '4', '32'], a: 0, why: '2⁴ = 16 sous-ensembles, en comptant ∅ et E.' },
     { q: 'A = {1 ; 2 ; 3} et B = {3 ; 4}. A Δ B vaut :', opts: ['{1 ; 2 ; 4}', '{3}', '{1 ; 2 ; 3 ; 4}', '{1 ; 2}'], a: 0, why: 'Différence symétrique : tout sauf l’intersection. 3 est commun, donc exclu.' },
-    { q: 'La négation de "x ∈ A et x ∈ B" est :', opts: ['x ∉ A ou x ∉ B', 'x ∉ A et x ∉ B', 'x ∈ A ou x ∈ B', 'x ∉ A ∩ B seulement'], a: 0, why: 'De Morgan : la négation d’un ET est un OU de négations.' },
+    { q: 'La négation de « x ∈ A et x ∈ B » est :', opts: ['x ∉ A ou x ∉ B', 'x ∉ A et x ∉ B', 'x ∈ A ou x ∈ B', 'x ∉ A ∩ B seulement'], a: 0, why: 'De Morgan : la négation d’un ET est un OU de négations.' },
     { q: 'A = {1 ; 2 ; 3}, B = {3 ; 4 ; 5}, C = {3}. |A ∪ B ∪ C| vaut :', opts: ['5', '6', '9', '4'], a: 0, why: 'A ∪ B = {1;2;3;4;5} et C est déjà contenu, donc 5 éléments.' },
     { q: 'Une classe de 30 élèves : 18 font du sport, 12 de la musique, 6 font les deux. Combien n’en font aucun ?', opts: ['6', '0', '12', '24'], a: 0, why: '18 + 12 − 6 = 24 pratiquent au moins une activité, donc 30 − 24 = 6 n’en font aucune.' },
-    { q: 'Combien vaut |{∅}| ?', opts: ['1', '0', '2', 'Indéfini'], a: 0, why: 'Cet ensemble contient un seul élément, qui se trouve être l’ensemble vide. Le cardinal est 1.' }
+    { q: 'Combien vaut |{∅}| ?', opts: ['1', '0', '2', 'Indéfini'], a: 0, why: 'Cet ensemble contient un seul élément, qui est l’ensemble vide. Le cardinal vaut 1.' },
+    { q: 'A = {1 ; 2 ; 3}, B = {2 ; 3 ; 4}. A ∖ B vaut :', opts: ['{1}', '{4}', '{1 ; 4}', '{2 ; 3}'], a: 0, why: 'On garde les éléments de A absents de B : seul 1 reste. A Δ B aurait valu {1 ; 4}.' },
+    { q: '|A| = 10, |B| = 8, |C| = 6, les intersections deux à deux valent 4, 3 et 2, la triple vaut 1. |A ∪ B ∪ C| = ?', opts: ['16', '24', '18', '14'], a: 0, why: '24 − (4+3+2) + 1 = 24 − 9 + 1 = 16.' },
+    { q: '(A ∪ B)ᶜ est égal à :', opts: ['Aᶜ ∩ Bᶜ', 'Aᶜ ∪ Bᶜ', 'A ∖ B', 'A ∩ B'], a: 0, why: 'De Morgan : le complémentaire d’une réunion est l’intersection des complémentaires.' },
+    { q: '|A| = 3 et |B| = 4. Combien vaut |A × B| ?', opts: ['12', '7', '64', '4'], a: 0, why: 'Le produit cartésien contient tous les couples possibles : 3 × 4 = 12.' },
+    { q: 'Deux ensembles disjoints forment toujours une partition de E :', opts: ['Faux, il faut aussi que leur union vaille E', 'Vrai', 'Vrai seulement s’ils sont finis', 'Vrai si l’un est vide'], a: 0, why: 'Une partition exige trois conditions : non vides, disjoints, et réunion égale à E.' }
   ]
 }
+
 ];
 
 const MEMO = `
