@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Maths S1 · BTS SIO · Trainer interactif</title>
-<meta name="description" content="Trainer interactif de maths pour le BTS SIO S1 : arithmétique, numération, matrices, logique et ensembles. Cours flash, pièges, calculateurs et quiz de rappel actif.">
+<meta name="description" content="Trainer interactif de maths pour le BTS SIO S1 : arithmétique, numération, matrices, logique et ensembles. Cours complet, exemples travaillés, pièges, calculateurs et quiz de rappel actif.">
 <meta name="theme-color" content="#f6f3ec">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Maths S1 · BTS SIO · Trainer interactif">
@@ -83,8 +83,8 @@ body {
   background: var(--paper);
   color: var(--ink);
   font-family: var(--font-body);
-  font-size: var(--fs-md);
-  line-height: 1.6;
+  font-size: 1.0625rem;
+  line-height: 1.68;
   -webkit-font-smoothing: antialiased;
 }
 h1, h2, h3, h4 { font-family: var(--font-display); line-height: 1.15; margin: 0; letter-spacing: -0.01em; }
@@ -92,12 +92,18 @@ p { margin: 0 0 var(--space-3); }
 ul, ol { margin: 0 0 var(--space-3); padding-inline-start: 1.25rem; }
 li { margin-block: var(--space-1); }
 strong { font-weight: 600; }
-code, .m {
+code {
   font-family: var(--font-mono);
   font-size: 0.88em;
   background: var(--surface-2);
   padding: 0.05em 0.25em;
   border-radius: 4px;
+}
+/* Variables et expressions mathématiques : serif, lisible, sans bruit visuel */
+.m {
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, ui-serif, serif;
+  font-size: 1.06em;
+  letter-spacing: 0.01em;
 }
 a { color: var(--accent); text-underline-offset: 3px; }
 a:hover { text-decoration: none; }
@@ -204,22 +210,144 @@ main { padding-block-end: var(--space-7); }
   box-shadow: var(--shadow);
 }
 .card + .card { margin-block-start: var(--space-3); }
-.card h3 { font-size: 1rem; margin-block-end: var(--space-2); }
+.card h3 {
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+  font-size: 1.02rem;
+  margin-block-end: var(--space-2);
+}
+.card h3::before { content: "▸"; color: var(--accent); font-size: 0.85em; }
+.card p { line-height: 1.7; }
 .card p:last-child, .card ul:last-child, .card ol:last-child { margin-block-end: 0; }
 
 .grid2 { display: grid; gap: var(--space-3); }
 @media (min-width: 640px) { .grid2 { grid-template-columns: 1fr 1fr; } }
 
+/* Barre d'onglets : grille lisible sur petit écran, aucun onglet masqué */
+@media (max-width: 560px) {
+  .tabbar {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2);
+    overflow-x: visible;
+  }
+  .tab {
+    justify-content: center;
+    padding-inline: var(--space-1);
+    font-size: 0.78rem;
+    min-height: 44px;
+    text-align: center;
+    line-height: 1.15;
+  }
+  .tab__num { display: none; }
+}
+
 .formula {
   display: block;
-  font-family: var(--font-mono); font-size: var(--fs-sm);
+  font-family: var(--font-mono);
+  font-size: clamp(0.76rem, 0.7rem + 0.3vw, 0.92rem);
+  line-height: 1.9;
+  text-align: center;
+  text-wrap: balance;
+  font-variant-numeric: tabular-nums;
   background: var(--surface-2);
-  border-inline-start: 3px solid var(--accent);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  padding: var(--space-2) var(--space-3);
-  margin-block: var(--space-2);
-  overflow-x: auto; white-space: nowrap;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-3);
+  margin-block: var(--space-3);
+  overflow-x: auto;
+  white-space: normal;
 }
+.formula .mx { white-space: nowrap; }
+
+/* Matrices : crochets typographiques */
+.mx {
+  display: inline-grid;
+  gap: 0.3em 1.1em;
+  padding: 0.3em 0.55em;
+  border-inline: 0.12em solid currentColor;
+  border-radius: 2px;
+  vertical-align: middle;
+  text-align: center;
+  font-size: 0.95em;
+  line-height: 1.35;
+}
+.mx--2 { grid-template-columns: repeat(2, minmax(1.6em, auto)); }
+.mx--3 { grid-template-columns: repeat(3, minmax(1.4em, auto)); }
+
+/* Encadré d'exemple travaillé */
+.ex {
+  margin-block-start: var(--space-3);
+  padding: var(--space-3);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+.ex__tag {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-block-end: var(--space-2);
+}
+.ex p { font-size: var(--fs-sm); }
+.ex > :last-child { margin-block-end: 0; }
+.ex .formula { background: var(--surface-2); }
+
+/* Étapes numérotées */
+.steps {
+  list-style: none;
+  counter-reset: st;
+  padding-inline-start: 0;
+  margin-block: var(--space-3);
+}
+.steps > li {
+  counter-increment: st;
+  display: grid;
+  grid-template-columns: 1.5rem 1fr;
+  gap: var(--space-2);
+  align-items: start;
+  font-size: var(--fs-sm);
+  margin-block: var(--space-2);
+}
+.steps > li::before {
+  content: counter(st);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  line-height: 1.5rem;
+  text-align: center;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 50%;
+  block-size: 1.5rem;
+}
+
+/* Table de conversion */
+.basetbl {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  margin-block: var(--space-3);
+}
+.basetbl caption {
+  caption-side: top;
+  text-align: start;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  color: var(--muted);
+  padding-block-end: var(--space-1);
+}
+.basetbl th, .basetbl td {
+  border: 1px solid var(--line);
+  padding: 0.1rem 0.25rem;
+  text-align: center;
+}
+.basetbl th { background: var(--surface-2); font-weight: 600; }
+.basetbl tbody tr:nth-child(even) { background: color-mix(in srgb, var(--surface-2) 45%, transparent); }
 
 .trap {
   display: grid; grid-template-columns: auto 1fr; gap: var(--space-3);
@@ -473,138 +601,420 @@ const CHAPTERS = [
   id: 'num',
   num: '02',
   title: 'Numération',
-  tagline: 'Bases 2, 8, 10, 16, complément à 2, tailles mémoire. Le chapitre le plus mécanique, donc celui où on peut prendre tous les points.',
+  tagline: 'Bases 2, 8, 10 et 16, partie fractionnaire, complément à 2, arithmétique binaire, codage et unités. Chapitre mécanique : chaque méthode appliquée proprement rapporte tous les points.',
   essentiel: `
     <div class="card">
-      <h3>Valeur d’un nombre en base b</h3>
-      <span class="formula">N = d_n × bⁿ + … + d₂ × b² + d₁ × b + d₀</span>
-      <p>Les chiffres vont de 0 à <span class="m">b − 1</span>. En base 16 on utilise 0 à 9 puis A, B, C, D, E, F pour 10 à 15.</p>
-      <p>Exemple : <span class="m">1011₂ = 1×8 + 0×4 + 1×2 + 1×1 = 11</span>.</p>
+      <h3>Compter dans une base b</h3>
+      <p>Une base <span class="m">b</span> utilise exactement <span class="m">b</span> chiffres : de <span class="m">0</span> à <span class="m">b − 1</span>. Chaque position vaut <span class="m">b</span> fois plus que celle à sa droite.</p>
+      <span class="formula">N = dₙ × bⁿ + … + d₂ × b²<br>+ d₁ × b¹ + d₀ × b⁰</span>
+      <p>Écriture : <span class="m">(dₙ…d₂d₁d₀)ᵦ</span>. Le chiffre le plus à droite est le <strong>poids faible</strong>, celui de gauche le <strong>poids fort</strong>.</p>
+      <p>En base 16 (hexadécimal), on complète avec <strong>A&nbsp;=&nbsp;10, B&nbsp;=&nbsp;11, C&nbsp;=&nbsp;12, D&nbsp;=&nbsp;13, E&nbsp;=&nbsp;14, F&nbsp;=&nbsp;15</strong>.</p>
+      <table class="basetbl">
+        <caption>Table à connaître : les 16 premières valeurs</caption>
+        <thead><tr><th>Déc.</th><th>Bin.</th><th>Oct.</th><th>Hex.</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>0000</td><td>0</td><td>0</td></tr>
+          <tr><td>1</td><td>0001</td><td>1</td><td>1</td></tr>
+          <tr><td>2</td><td>0010</td><td>2</td><td>2</td></tr>
+          <tr><td>3</td><td>0011</td><td>3</td><td>3</td></tr>
+          <tr><td>4</td><td>0100</td><td>4</td><td>4</td></tr>
+          <tr><td>5</td><td>0101</td><td>5</td><td>5</td></tr>
+          <tr><td>6</td><td>0110</td><td>6</td><td>6</td></tr>
+          <tr><td>7</td><td>0111</td><td>7</td><td>7</td></tr>
+          <tr><td>8</td><td>1000</td><td>10</td><td>8</td></tr>
+          <tr><td>9</td><td>1001</td><td>11</td><td>9</td></tr>
+          <tr><td>10</td><td>1010</td><td>12</td><td>A</td></tr>
+          <tr><td>11</td><td>1011</td><td>13</td><td>B</td></tr>
+          <tr><td>12</td><td>1100</td><td>14</td><td>C</td></tr>
+          <tr><td>13</td><td>1101</td><td>15</td><td>D</td></tr>
+          <tr><td>14</td><td>1110</td><td>16</td><td>E</td></tr>
+          <tr><td>15</td><td>1111</td><td>17</td><td>F</td></tr>
+        </tbody>
+      </table>
     </div>
+
     <div class="card">
-      <h3>Conversion vers une base b</h3>
-      <p><strong>Divisions successives</strong> par <span class="m">b</span> : on note les restes, puis on les lit <strong>de bas en haut</strong>. Le dernier quotient non nul devient le chiffre de tête.</p>
-      <p>Exemple : 45 en base 2 donne les restes 1, 0, 1, 1, 0, 1 lus à l’envers, soit <span class="m">101101₂</span>.</p>
+      <h3>Base b → base 10 : la somme des poids</h3>
+      <p>On écrit les poids sous chaque chiffre (en partant de la droite : <span class="m">1, b, b², b³…</span>), on multiplie, on additionne.</p>
+      <span class="formula">(2AC)₁₆ = 2×16² + 10×16¹ + 12×16⁰ = 512 + 160 + 12 = 684</span>
+      <span class="formula">(1021)₃ = 1×27 + 0×9 + 2×3 + 1 = 34</span>
+      <span class="formula">(101101)₂ = 32 + 8 + 4 + 1 = 45</span>
+      <div class="ex">
+        <span class="ex__tag">Astuce — méthode de Horner</span>
+        <p>Plus rapide sur les grands nombres, et sans calculer de puissances : on part du chiffre de gauche, on multiplie par la base, on ajoute le chiffre suivant.</p>
+        <span class="formula">2 → 2×16 + 10 = 42 → 42×16 + 12 = 684</span>
+        <p>En base 2, chaque étape est un « ×2 + bit » : <span class="m">1 → 2 → 5 → 11 → 22 → 45</span>.</p>
+      </div>
     </div>
+
     <div class="card">
-      <h3>Binaire et hexadécimal</h3>
-      <p>Un chiffre hexadécimal = exactement <strong>4 bits</strong>. On regroupe par paquets de 4 en partant de la droite.</p>
-      <span class="formula">1101 0110₂ = D6₁₆ &nbsp;&nbsp;·&nbsp;&nbsp; 1010₂ = A₁₆ = 10</span>
-      <p>Utilité : couleurs web, adresses MAC, masques réseau, codes d’erreur.</p>
+      <h3>Base 10 → base b : divisions successives</h3>
+      <p>On divise par <span class="m">b</span> autant de fois que nécessaire, on garde les <strong>restes</strong>, puis on les lit <strong>du dernier au premier</strong>. Le dernier quotient non nul donne le chiffre de tête.</p>
+      <div class="ex">
+        <span class="ex__tag">Exemple — 156 en base 7</span>
+        <span class="formula">156 = 7 × 22 + 2<br>22 = 7 × 3 + 1<br>3 = 7 × 0 + 3</span>
+        <p>Restes lus à l’envers : <span class="m">2</span>, puis <span class="m">1</span>, puis <span class="m">3</span> → <span class="m">(156)₁₀ = (312)₇</span>. Vérification : <span class="m">3×49 + 1×7 + 2 = 156</span>.</p>
+      </div>
+      <div class="ex">
+        <span class="ex__tag">Exemple — 45 en binaire</span>
+        <span class="formula">45 = 2×22 + 1<br>22 = 2×11 + 0<br>11 = 2×5 + 1<br>5 = 2×2 + 1<br>2 = 2×1 + 0<br>1 = 2×0 + 1</span>
+        <p>Lecture de bas en haut : <span class="m">101101₂</span>.</p>
+      </div>
+      <p><strong>Autre méthode</strong> : soustraire la plus grande puissance de <span class="m">b</span> possible, marquer 1, continuer avec le reste (la plus rapide en binaire : <span class="m">45 → 32 + 8 + 4 + 1</span>).</p>
     </div>
+
     <div class="card">
-      <h3>Entiers signés sur n bits</h3>
-      <p>Non signé : <span class="m">0</span> à <span class="m">2ⁿ − 1</span>. En complément à 2 : <span class="m">−2ⁿ⁻¹</span> à <span class="m">2ⁿ⁻¹ − 1</span>.</p>
-      <p><strong>Méthode</strong> : pour écrire <span class="m">−x</span>, on code <span class="m">x</span> sur n bits, on inverse tous les bits, puis on ajoute 1.</p>
-      <span class="formula">−5 sur 8 bits : 0000 0101 → 1111 1010 → 1111 1011</span>
-      <p>Le bit de poids fort vaut 1 si le nombre est négatif. Sur 8 bits signés : <span class="m">127 + 1 = −128</span> (dépassement).</p>
+      <h3>Raccourcis : octal et hexadécimal depuis le binaire</h3>
+      <p>Ces deux bases ne sont que des <strong>groupes de bits</strong> : 1 chiffre octal = 3 bits, 1 chiffre hexadécimal = 4 bits.</p>
+      <ul>
+        <li><strong>Vers l’octal</strong> : regrouper par 3 en partant de la droite, compléter à gauche par des 0.</li>
+        <li><strong>Vers l’hexa</strong> : regrouper par 4 en partant de la droite, même complément.</li>
+        <li><strong>Sens inverse</strong> : chaque chiffre octal donne 3 bits, chaque chiffre hexa donne 4 bits, dans l’ordre.</li>
+      </ul>
+      <span class="formula">1101011₂ → 001 101 011 → (153)₈</span>
+      <span class="formula">1101011₂ → 0110 1011 → (6B)₁₆</span>
+      <span class="formula">(47)₈ = 100 111₂ &nbsp;&nbsp;·&nbsp;&nbsp; (F3)₁₆ = 1111 0011₂</span>
+      <p>On ne passe <strong>jamais</strong> par la base 10 entre binaire, octal et hexa : plus long et plus d’erreurs.</p>
     </div>
+
     <div class="card">
-      <h3>Tailles mémoire</h3>
-      <p>1 octet = 8 bits · 1 kio = 1024 octets · 1 Mio = 1024 kio · 1 Gio = 1024 Mio.</p>
-      <p>Un entier 32 bits non signé monte à 4 294 967 295. Un flottant simple précision occupe 32 bits : 1 signe, 8 exposant (biais 127), 23 mantisse.</p>
+      <h3>Partie fractionnaire (après la virgule)</h3>
+      <p>À droite de la virgule, les poids sont négatifs : <span class="m">b⁻¹, b⁻², b⁻³…</span> soit <span class="m">1/b, 1/b², 1/b³…</span></p>
+      <span class="formula">(0,101)₂ = 1/2 + 0/4 + 1/8 = 0,625</span>
+      <p><strong>Décimal → base b</strong> : on multiplie la partie fractionnaire par <span class="m">b</span>, on note la partie entière, on recommence avec ce qui reste après la virgule. Lecture des parties entières <strong>de haut en bas</strong> (l’inverse des divisions).</p>
+      <div class="ex">
+        <span class="ex__tag">Exemple — 0,6875 en binaire</span>
+        <span class="formula">0,6875 × 2 = 1,375 → 1<br>0,375 × 2 = 0,75 → 0<br>0,75 × 2 = 1,5 → 1<br>0,5 × 2 = 1,0 → 1</span>
+        <p>Donc <span class="m">(0,6875)₁₀ = (0,1011)₂</span>. Et <span class="m">45,6875 = 101101,1011₂</span> : partie entière et partie fractionnaire se convertissent séparément.</p>
+      </div>
+      <p><strong>Attention</strong> : la conversion peut ne jamais s’arrêter. <span class="m">(0,1)₁₀ = (0,0001100110011…)₂</span> est infini, d’où les arrondis des flottants.</p>
+    </div>
+
+    <div class="card">
+      <h3>Entiers signés : complément à 2</h3>
+      <p>Sur <span class="m">n</span> bits, un entier signé va de <span class="m">−2ⁿ⁻¹</span> à <span class="m">2ⁿ⁻¹ − 1</span>. Le bit de poids fort vaut 1 pour un négatif.</p>
+      <ol class="steps">
+        <li>Écrire la valeur absolue sur <span class="m">n</span> bits.</li>
+        <li>Inverser tous les bits (0 ↔ 1).</li>
+        <li>Ajouter 1, puis <strong>tronquer à n bits</strong>.</li>
+      </ol>
+      <div class="ex">
+        <span class="ex__tag">Exemple — −6 sur 8 bits</span>
+        <span class="formula">6 = 0000 0110<br>inversé = 1111 1001<br>+1 = 1111 1010</span>
+        <p>Retour arrière : <span class="m">1111 1010</span> commence par 1, donc négatif. On réinverse et on ajoute 1 → <span class="m">0000 0110 = 6</span>, soit <span class="m">−6</span>.</p>
+        <p>Raccourci : <span class="m">valeur = −128 + bits restants = −128 + 122 = −6</span>.</p>
+      </div>
+      <table class="basetbl">
+        <caption>Lecture sur 4 bits (plage −8 à 7)</caption>
+        <thead><tr><th>Bits</th><th>Non signé</th><th>Signé (Cà2)</th></tr></thead>
+        <tbody>
+          <tr><td>0000</td><td>0</td><td>0</td></tr>
+          <tr><td>0101</td><td>5</td><td>5</td></tr>
+          <tr><td>0111</td><td>7</td><td>7</td></tr>
+          <tr><td>1000</td><td>8</td><td>−8</td></tr>
+          <tr><td>1011</td><td>11</td><td>−5</td></tr>
+          <tr><td>1111</td><td>15</td><td>−1</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Addition et soustraction en complément à 2</h3>
+      <p>On additionne <strong>bit à bit avec les retenues</strong>, comme en primaire. La retenue qui sort à gauche est <strong>abandonnée</strong> : le résultat reste sur <span class="m">n</span> bits.</p>
+      <p>Soustraction : <span class="m">a − b = a + (−b)</span>, donc on ajoute le complément à 2 de <span class="m">b</span>. Aucun circuit de soustraction nécessaire, c’est tout l’intérêt du Cà2.</p>
+      <div class="ex">
+        <span class="ex__tag">Exemple — 45 + (−19)</span>
+        <span class="formula">45  = 0010 1101<br>−19 = 1110 1101<br>somme = 1 0001 1010</span>
+        <p>On jette la retenue sortante : <span class="m">0001 1010 = 26</span>. Correct, car <span class="m">45 − 19 = 26</span>.</p>
+      </div>
+      <div class="ex">
+        <span class="ex__tag">Débordement (overflow)</span>
+        <p>Il y a débordement quand <strong>deux opérandes de même signe</strong> donnent un résultat de <strong>signe opposé</strong>.</p>
+        <span class="formula">0110 0100 + 0110 0100 = 1100 1000</span>
+        <p><span class="m">100 + 100 = 200</span> dépasse 127 : le résultat affiché (<span class="m">−56</span>) est faux. Le signe final seul ne prouve rien, il faut regarder les deux opérandes.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Signe-magnitude, complément à 1, complément à 2</h3>
+      <p>Trois façons de coder les négatifs, une seule est utilisée en pratique.</p>
+      <ul>
+        <li><strong>Signe-magnitude</strong> : 1 bit de signe + valeur absolue. Deux zéros (<span class="m">0000</span> et <span class="m">1000</span>), et l’addition ne fonctionne pas.</li>
+        <li><strong>Complément à 1</strong> : on inverse les bits. Deux zéros aussi (<span class="m">0000</span> / <span class="m">1111</span>), avec retenue circulaire à gérer.</li>
+        <li><strong>Complément à 2</strong> : inversion + 1. Un seul zéro, addition directe, retenue ignorée. C’est le standard.</li>
+      </ul>
+      <span class="formula">−5 sur 8 bits · SM : 1000 0101 · Cà1 : 1111 1010 · Cà2 : 1111 1011</span>
+    </div>
+
+    <div class="card">
+      <h3>Codage des caractères</h3>
+      <p><strong>ASCII</strong> : 7 bits utiles, 128 caractères. <strong>Latin-1</strong> étend à 8 bits (256). <strong>UTF-8</strong> code un point Unicode sur 1 à 4 octets : l’ASCII reste identique, un accent prend 2 octets.</p>
+      <p>Repères à retenir : espace = <span class="m">32</span>, <span class="m">'0' = 48</span>, <span class="m">'A' = 65</span>, <span class="m">'a' = 97</span>. L’écart majuscule/minuscule vaut toujours <span class="m">32</span> : un seul bit change.</p>
+      <div class="ex">
+        <span class="ex__tag">Exemple — BCD et taille d’une chaîne</span>
+        <p>En <strong>BCD</strong>, chaque chiffre décimal occupe un quartet : <span class="m">42 → 0100 0010</span>. Ce n’est pas du binaire : <span class="m">42</span> en binaire vaut <span class="m">0010 1010</span>.</p>
+        <p>La chaîne <span class="m">« Maths »</span> fait 5 caractères, donc 5 octets en ASCII/UTF-8 (aucun accent), soit 40 bits.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Unités, tailles et débits</h3>
+      <p>1 octet = 8 bits. Préfixes binaires : 1 kio = 1024 o, 1 Mio = 1024 kio, 1 Gio = 1024 Mio. Préfixes décimaux (SI, souvent utilisés par les fabricants de disques) : 1 ko = 1000 o, 1 Mo = 1000 ko.</p>
+      <span class="formula">1 kio = 1 024 o &nbsp;·&nbsp; 1 Mio = 1 048 576 o &nbsp;·&nbsp; 1 Gio ≈ 1,074 Go</span>
+      <p><strong>Débit</strong> : les réseaux s’expriment en bits par seconde (Mb/s), les fichiers en octets (Mo). On divise par 8.</p>
+      <div class="ex">
+        <span class="ex__tag">Exemple — téléchargement</span>
+        <p>Connexion à <span class="m">100 Mb/s</span> → <span class="m">12,5 Mo/s</span>. Un fichier de <span class="m">4,5 Go</span> (≈ 4608 Mo) demande environ <span class="m">369 s</span>, soit 6 min 10 s.</p>
+      </div>
+      <p>Limites à connaître : 8 bits non signés → 255 · 16 bits → 65 535 · 32 bits → 4 294 967 295. Flottant 32 bits : 1 signe, 8 exposant (biais 127), 23 mantisse.</p>
+    </div>
+
+    <div class="card">
+      <h3>Les réflexes du sujet</h3>
+      <ol class="steps">
+        <li><strong>Lire la base demandée</strong> : un 102 en base 2 est une faute immédiate.</li>
+        <li><strong>Annoncer le nombre de bits</strong> avant de coder un négatif, sinon le Cà2 n’a pas de sens.</li>
+        <li><strong>Vérifier par retour</strong> : reconvertir le résultat en décimal prend 15 secondes et sécurise la note.</li>
+        <li><strong>Regrouper à partir de la droite</strong> pour l’octal et l’hexa, en complétant à gauche.</li>
+        <li><strong>Distinguer o/kio et bit/octet</strong> : la moitié des points perdus en QCM vient de là.</li>
+      </ol>
     </div>`,
   pieges: `
-    <div class="trap"><span class="trap__flag">ordre</span><p>Les restes se lisent du <strong>dernier au premier</strong>. Les écrire dans l’ordre de calcul donne le nombre à l’envers.</p></div>
-    <div class="trap"><span class="trap__flag">chiffres</span><p>En base 2, il n’existe que 0 et 1. Écrire <span class="m">102</span> en base 2 est une faute immédiate. En base 8, le chiffre 9 est interdit.</p></div>
-    <div class="trap"><span class="trap__flag">2ⁿ</span><p>Sur 8 bits, il y a <span class="m">2⁸ = 256</span> valeurs (0 à 255), pas 255 valeurs. Préciser "de 0 à 255" évite le hors-sujet.</p></div>
-    <div class="trap"><span class="trap__flag">Cà2</span><p>Le complément à 2 se fait <strong>sur un nombre de bits fixé</strong>. Oublier de tronquer après le +1 produit un bit parasite.</p></div>
-    <div class="trap"><span class="trap__flag">kio</span><p>1 kio = 1024 o, mais 1 ko (SI) = 1000 o. Un sujet qui parle de "kilo-octets" attend parfois 1000.</p></div>`,
+    <div class="trap"><span class="trap__flag">ordre</span><p>Les restes des divisions se lisent du <strong>dernier au premier</strong>, les parties entières de la partie fractionnaire <strong>du premier au dernier</strong>. Inverser l’un des deux donne un nombre faux.</p></div>
+    <div class="trap"><span class="trap__flag">chiffres</span><p>En base 2 il n’existe que 0 et 1, en base 8 le chiffre 9 est interdit, en base 5 le 7 est interdit. Un chiffre ≥ b invalide toute l’écriture.</p></div>
+    <div class="trap"><span class="trap__flag">2ⁿ</span><p>Sur 8 bits il y a <span class="m">2⁸ = 256</span> valeurs (0 à 255), pas 255. Écrire « 255 valeurs » est un hors-sujet classique.</p></div>
+    <div class="trap"><span class="trap__flag">groupes</span><p>Le regroupement par 3 ou 4 bits part toujours de la <strong>droite</strong>. Partir de la gauche décale tous les chiffres et ruine la conversion.</p></div>
+    <div class="trap"><span class="trap__flag">Cà2</span><p>Le complément à 2 se fait <strong>sur un nombre de bits fixé</strong>. Oublier de tronquer après le +1 fait apparaître un bit parasite.</p></div>
+    <div class="trap"><span class="trap__flag">sens</span><p><span class="m">0000 0101</span> vaut 5 et <span class="m">1111 1011</span> vaut −5 : un même motif binaire n’a pas la même valeur selon qu’il est lu en non signé ou en Cà2.</p></div>
+    <div class="trap"><span class="trap__flag">overflow</span><p>Une retenue qui sort ne signifie pas débordement. Le débordement se détecte sur les <strong>signes</strong> : mêmes signes en entrée, signe différent en sortie.</p></div>
+    <div class="trap"><span class="trap__flag">kio</span><p>1 kio = 1024 o, mais 1 ko (SI) = 1000 o. Et 1 Mo/s n’est pas 1 Mb/s : facteur 8.</p></div>`,
   calc: 'num',
   cards: [
-    { r: 'Base b → 10', v: 'Somme des chiffres multipliés par les puissances de b.' },
+    { r: 'Base b → 10', v: 'Somme des chiffres multipliés par les puissances de b, poids fort à gauche.' },
     { r: '10 → base b', v: 'Divisions successives par b, restes lus de bas en haut.' },
-    { r: 'Binaire → hexa', v: 'Regrouper par 4 bits en partant de la droite.' },
-    { r: 'Cà2 de −x', v: 'Coder x, inverser tous les bits, ajouter 1, tronquer sur n bits.' },
+    { r: 'Horner', v: 'Partir du chiffre de gauche : ×b, + chiffre suivant, répéter.' },
+    { r: 'Binaire → hexa', v: 'Regrouper par 4 bits en partant de la droite, compléter à gauche.' },
+    { r: 'Binaire → octal', v: 'Regrouper par 3 bits en partant de la droite.' },
+    { r: 'Partie fractionnaire', v: 'Multiplications successives par b, parties entières lues de haut en bas.' },
+    { r: 'Cà2 de −x', v: 'Coder x sur n bits, inverser tous les bits, ajouter 1, tronquer.' },
+    { r: 'Décoder un Cà2', v: 'Bit de poids fort = 1 → valeur = −2ⁿ⁻¹ + les autres bits.' },
     { r: 'Plage signée n bits', v: 'De −2ⁿ⁻¹ à 2ⁿ⁻¹ − 1.' },
-    { r: '1 octet', v: '8 bits, soit 256 valeurs non signées.' },
-    { r: '1 kio', v: '1024 octets.' },
-    { r: 'Flottant 32 bits', v: '1 bit signe, 8 exposant biaisé 127, 23 mantisse.' }
+    { r: 'Plage non signée n bits', v: 'De 0 à 2ⁿ − 1, soit 2ⁿ valeurs.' },
+    { r: 'Soustraction', v: 'a − b = a + Cà2(b), retenue sortante abandonnée.' },
+    { r: 'Débordement', v: 'Deux opérandes de même signe, résultat de signe opposé.' },
+    { r: 'ASCII utile', v: 'Espace 32, 0 → 48, A → 65, a → 97. Écart casse = 32.' },
+    { r: 'Unités', v: '1 octet = 8 bits, 1 Mio = 1024 kio = 1 048 576 o.' },
+    { r: 'Débit', v: 'Mb/s ÷ 8 = Mo/s.' }
   ],
   quiz: [
-    { q: '101101₂ vaut combien en décimal ?', opts: ['45', '44', '43', '61'], a: 0, why: '32 + 8 + 4 + 1 = 45.' },
-    { q: 'L’écriture hexadécimale de 1111 0000₂ est :', opts: ['F0', '0F', 'EF', 'FF'], a: 0, why: '1111 = F et 0000 = 0, donc F0₁₆ = 240.' },
-    { q: '−6 en complément à 2 sur 8 bits :', opts: ['1111 1010', '1000 0110', '1111 1001', '1111 1011'], a: 0, why: '6 = 0000 0110, inversé = 1111 1001, +1 = 1111 1010.' },
-    { q: 'Combien de valeurs distinctes code-t-on sur 5 bits ?', opts: ['32', '31', '64', '10'], a: 0, why: '2⁵ = 32 valeurs, de 0 à 31 en non signé.' },
-    { q: 'Le plus grand entier signé sur 8 bits vaut :', opts: ['127', '128', '255', '256'], a: 0, why: 'Plage signée : −128 à 127. 255 est la borne non signée.' },
+    { q: 'Combien vaut (1101 0110)₂ en décimal ?', opts: ['212', '214', '206', '198'], a: 1, why: '128 + 64 + 16 + 4 + 2 = 214.' },
+    { q: '(1021)₃ vaut :', opts: ['31', '28', '34', '37'], a: 2, why: '1×27 + 0×9 + 2×3 + 1 = 27 + 6 + 1 = 34.' },
+    { q: '156 en base 7 s’écrit :', opts: ['312', '321', '231', '402'], a: 0, why: '156 = 7×22 + 2, 22 = 7×3 + 1, 3 = 7×0 + 3. Restes lus à l’envers : 312.' },
+    { q: '0,101₂ vaut :', opts: ['0,5', '0,625', '0,75', '0,3125'], a: 1, why: '1/2 + 1/8 = 0,5 + 0,125 = 0,625.' },
+    { q: '−6 en complément à 2 sur 8 bits :', opts: ['1111 1011', '1000 0110', '1111 1010', '1111 1001'], a: 2, why: '6 = 0000 0110, inversé = 1111 1001, +1 = 1111 1010.' },
+    { q: 'Sur 5 bits, combien de valeurs distinctes code-t-on ?', opts: ['31', '10', '64', '32'], a: 3, why: '2⁵ = 32 valeurs, de 0 à 31 en non signé.' },
+    { q: 'Le plus grand entier signé sur 8 bits vaut :', opts: ['255', '127', '128', '256'], a: 1, why: 'Plage signée : −128 à 127. 255 est la borne non signée.' },
     { q: '45 en base 2 s’écrit :', opts: ['101101', '101011', '110101', '110110'], a: 0, why: '45 = 32 + 8 + 4 + 1, soit les bits 5, 3, 2 et 0.' },
-    { q: '2AC₁₆ vaut en décimal :', opts: ['684', '692', '606', '652'], a: 0, why: '2 × 256 + 10 × 16 + 12 = 512 + 160 + 12 = 684.' },
-    { q: '1 Mio représente :', opts: ['1024 kio', '1000 kio', '1024 octets', '1 000 000 bits'], a: 0, why: 'En informatique, les préfixes binaires sont des puissances de 1024.' }
+    { q: '1 Mio représente :', opts: ['1000 kio', '1024 octets', '1 000 000 bits', '1024 kio'], a: 3, why: 'Les préfixes binaires sont des puissances de 1024 : 1 Mio = 1024 kio.' },
+    { q: '6B₁₆ en binaire donne :', opts: ['0110 1011', '0110 1101', '1011 0110', '0110 1110'], a: 0, why: '6 = 0110 et B = 1011, soit 0110 1011₂ = 107.' },
+    { q: '100 Mb/s correspond à :', opts: ['100 Mo/s', '12,5 Mo/s', '10 Mo/s', '800 Mo/s'], a: 1, why: 'Les bits et les octets diffèrent d’un facteur 8 : 100 / 8 = 12,5 Mo/s.' },
+    { q: '0110 0100 + 0110 0100 sur 8 bits signés donne 1100 1000. Conclusion :', opts: ['Débordement : 200 dépasse 127', 'Résultat exact', 'Il faut ignorer le bit de signe', '−56 est la bonne réponse'], a: 0, why: 'Deux positifs donnent un négatif : 100 + 100 = 200, hors de la plage −128 à 127.' },
+    { q: 'En base b, quels chiffres peut-on écrire ?', opts: ['0 à 9 seulement', '0 à b − 1', '1 à b', '0 à b + 1'], a: 1, why: 'La base b dispose de b chiffres, numérotés de 0 à b − 1.' }
   ]
 },
 {
   id: 'mat',
   num: '03',
   title: 'Matrices',
-  tagline: 'Produit, déterminant, inverse, systèmes linéaires et matrices d’adjacence. C’est le chapitre le plus rentable en points.',
+  tagline: 'Vocabulaire, opérations, produit, transposée, déterminants 2×2 et 3×3, inverse, systèmes linéaires et matrices d’adjacence. Le chapitre le plus rentable en points.',
   essentiel: `
     <div class="card">
-      <h3>Vocabulaire</h3>
-      <p>Une matrice <span class="m">A</span> de dimension <span class="m">m × n</span> a <em>m lignes</em> et <em>n colonnes</em>. Le coefficient <span class="m">aᵢⱼ</span> est à la ligne i, colonne j.</p>
-      <p>Matrice carrée : même nombre de lignes et de colonnes. Matrice identité <span class="m">Iₙ</span> : des 1 sur la diagonale, des 0 ailleurs.</p>
+      <h3>Vocabulaire et familles de matrices</h3>
+      <p>Une matrice <span class="m">A</span> de dimension <span class="m">m × n</span> a <strong>m lignes</strong> et <strong>n colonnes</strong> (toujours dans cet ordre). Le coefficient <span class="m">aᵢⱼ</span> est à la ligne <span class="m">i</span>, colonne <span class="m">j</span>.</p>
+      <span class="formula"><span class="mx mx--2"><span>a₁₁</span><span>a₁₂</span><span>a₂₁</span><span>a₂₂</span></span> &nbsp;est une matrice carrée d’ordre 2</span>
+      <ul>
+        <li><strong>Ligne</strong> : 1 × n · <strong>Colonne</strong> : m × 1 · <strong>Carrée</strong> : m = n.</li>
+        <li><strong>Identité <span class="m">Iₙ</span></strong> : 1 sur la diagonale, 0 ailleurs.</li>
+        <li><strong>Nulle</strong> : tous les coefficients nuls. <strong>Diagonale</strong> : seuls les <span class="m">aᵢᵢ</span> peuvent être non nuls.</li>
+        <li><strong>Triangulaire</strong> : que des 0 au-dessus (inférieure) ou en dessous (supérieure) de la diagonale.</li>
+        <li><strong>Symétrique</strong> : <span class="m">Aᵀ = A</span>, c’est-à-dire <span class="m">aᵢⱼ = aⱼᵢ</span>.</li>
+      </ul>
+      <span class="formula">I₂ = <span class="mx mx--2"><span>1</span><span>0</span><span>0</span><span>1</span></span> &nbsp;·&nbsp; O₂ = <span class="mx mx--2"><span>0</span><span>0</span><span>0</span><span>0</span></span></span>
     </div>
+
     <div class="card">
-      <h3>Somme et multiplication par un réel</h3>
-      <p>La somme exige des dimensions identiques : on ajoute coefficient par coefficient. Pour <span class="m">k × A</span>, on multiplie chaque coefficient par k.</p>
+      <h3>Égalité, somme, multiplication par un réel</h3>
+      <p>Deux matrices sont égales si elles ont <strong>la même dimension</strong> et les mêmes coefficients un à un.</p>
+      <p>La somme (et la différence) exige des dimensions <strong>identiques</strong> : on ajoute coefficient par coefficient. Pour <span class="m">k × A</span>, on multiplie <strong>chaque</strong> coefficient par <span class="m">k</span>.</p>
+      <div class="ex">
+        <span class="ex__tag">Exemple</span>
+        <span class="formula"><span class="mx mx--2"><span>1</span><span>2</span><span>3</span><span>4</span></span> + <span class="mx mx--2"><span>5</span><span>6</span><span>7</span><span>8</span></span> = <span class="mx mx--2"><span>6</span><span>8</span><span>10</span><span>12</span></span> &nbsp;·&nbsp; 3 × <span class="mx mx--2"><span>1</span><span>2</span><span>3</span><span>4</span></span> = <span class="mx mx--2"><span>3</span><span>6</span><span>9</span><span>12</span></span></span>
+        <p>Ces opérations sont commutatives et distributives, contrairement au produit.</p>
+      </div>
     </div>
+
     <div class="card">
-      <h3>Produit de matrices</h3>
-      <p><strong>Condition</strong> : le nombre de colonnes de A doit égaler le nombre de lignes de B.</p>
+      <h3>Produit matriciel</h3>
+      <p><strong>Condition d’existence</strong> : le nombre de colonnes de <span class="m">A</span> doit égaler le nombre de lignes de <span class="m">B</span>.</p>
       <span class="formula">(m × n) · (n × p) = (m × p)</span>
-      <p>Le coefficient <span class="m">cᵢⱼ</span> = somme des produits de la <strong>ligne i de A</strong> par la <strong>colonne j de B</strong> :</p>
+      <p>Chaque coefficient est le produit d’une <strong>ligne de A</strong> par une <strong>colonne de B</strong>, sommé :</p>
       <span class="formula">cᵢⱼ = aᵢ₁b₁ⱼ + aᵢ₂b₂ⱼ + … + aᵢₙbₙⱼ</span>
-      <p>Le produit n’est pas commutatif : <span class="m">AB ≠ BA</span> en général. Et <span class="m">AB = 0</span> n’implique pas <span class="m">A = 0</span> ou <span class="m">B = 0</span>.</p>
+      <div class="ex">
+        <span class="ex__tag">Exemple complet</span>
+        <span class="formula">A = <span class="mx mx--2"><span>1</span><span>2</span><span>3</span><span>4</span></span> &nbsp; B = <span class="mx mx--2"><span>5</span><span>6</span><span>7</span><span>8</span></span></span>
+        <span class="formula">AB = <span class="mx mx--2"><span>1×5 + 2×7</span><span>1×6 + 2×8</span><span>3×5 + 4×7</span><span>3×6 + 4×8</span></span> = <span class="mx mx--2"><span>19</span><span>22</span><span>43</span><span>50</span></span></span>
+        <span class="formula">BA = <span class="mx mx--2"><span>5×1 + 6×3</span><span>5×2 + 6×4</span><span>7×1 + 8×3</span><span>7×2 + 8×4</span></span> = <span class="mx mx--2"><span>23</span><span>34</span><span>31</span><span>46</span></span></span>
+        <p><span class="m">AB ≠ BA</span> : le produit n’est pas commutatif. Et <span class="m">AB = O</span> n’implique pas <span class="m">A = O</span> ou <span class="m">B = O</span>.</p>
+      </div>
+      <p><strong>Calcul pratique</strong> : poser la ligne de A horizontalement et la colonne de B verticalement, multiplier terme à terme, additionner. Écrire les produits intermédiaires évite les erreurs de report.</p>
     </div>
+
     <div class="card">
-      <h3>Déterminant</h3>
-      <span class="formula">det [[a, b], [c, d]] = ad − bc</span>
-      <p><strong>3 × 3, règle de Sarrus</strong> : recopier les deux premières colonnes à droite, puis somme des trois diagonales descendantes <strong>moins</strong> somme des trois diagonales montantes.</p>
-      <p>Propriétés : <span class="m">det(AB) = det(A) × det(B)</span> et <span class="m">det(Aᵀ) = det(A)</span>.</p>
+      <h3>Identité, puissances, matrices nilpotentes</h3>
+      <p><span class="m">Iₙ</span> est l’élément neutre : <span class="m">A · Iₙ = Iₙ · A = A</span> dès que les dimensions coïncident.</p>
+      <span class="formula">A² = A × A &nbsp;·&nbsp; A³ = A × A × A &nbsp;·&nbsp; A⁰ = I</span>
+      <p><strong>Une matrice peut être nilpotente</strong> : <span class="m">A ≠ O</span> mais <span class="m">A² = O</span>.</p>
+      <span class="formula"><span class="mx mx--2"><span>0</span><span>1</span><span>0</span><span>0</span></span>² = <span class="mx mx--2"><span>0</span><span>0</span><span>0</span><span>0</span></span></span>
+      <p>Conséquence : les identités remarquables du type <span class="m">(A + B)² = A² + 2AB + B²</span> ne sont valables que si <span class="m">AB = BA</span>. Sinon, il faut écrire <span class="m">A² + AB + BA + B²</span>.</p>
     </div>
+
+    <div class="card">
+      <h3>Transposée</h3>
+      <p><span class="m">Aᵀ</span> s’obtient en échangeant lignes et colonnes : la ligne 1 devient la colonne 1. Une matrice <span class="m">m × n</span> donne une matrice <span class="m">n × m</span>.</p>
+      <span class="formula">A = <span class="mx mx--2"><span>1</span><span>2</span><span>3</span><span>4</span></span> &nbsp;→&nbsp; Aᵀ = <span class="mx mx--2"><span>1</span><span>3</span><span>2</span><span>4</span></span></span>
+      <ul>
+        <li><span class="m">(Aᵀ)ᵀ = A</span></li>
+        <li><span class="m">(A + B)ᵀ = Aᵀ + Bᵀ</span></li>
+        <li><span class="m">(kA)ᵀ = k Aᵀ</span></li>
+        <li><strong><span class="m">(AB)ᵀ = Bᵀ Aᵀ</span></strong> : l’ordre s’inverse, c’est le piège classique.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Déterminant 2 × 2</h3>
+      <span class="formula">det <span class="mx mx--2"><span>a</span><span>b</span><span>c</span><span>d</span></span> = ad − bc</span>
+      <p>Produit de la diagonale descendante <strong>moins</strong> produit de la diagonale montante. C’est un <strong>nombre</strong>, pas une matrice.</p>
+      <div class="ex">
+        <span class="ex__tag">Exemple</span>
+        <p><span class="m">det <span class="mx mx--2"><span>3</span><span>5</span><span>2</span><span>4</span></span> = 3×4 − 5×2 = 12 − 10 = 2</span>, donc la matrice est inversible.</p>
+      </div>
+      <p><strong>Propriétés</strong> :</p>
+      <ul>
+        <li><span class="m">det(AB) = det(A) × det(B)</span> et <span class="m">det(Aᵀ) = det(A)</span>.</li>
+        <li><span class="m">det(kA) = kⁿ det(A)</span> pour une matrice d’ordre <span class="m">n</span> (et non <span class="m">k · det A</span>).</li>
+        <li>Échanger deux lignes change le signe. Une ligne nulle annule le déterminant. Ajouter à une ligne un multiple d’une autre ne le change pas.</li>
+        <li><span class="m">det(Iₙ) = 1</span>. Pour une matrice triangulaire, le déterminant est le produit de la diagonale.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Déterminant 3 × 3 : règle de Sarrus</h3>
+      <p>On recopie les deux premières colonnes à droite, puis : <strong>trois diagonales descendantes moins trois diagonales montantes</strong>.</p>
+      <div class="ex">
+        <span class="ex__tag">Exemple — déterminant de M</span>
+        <span class="formula">M = <span class="mx mx--3"><span>2</span><span>1</span><span>3</span><span>0</span><span>4</span><span>5</span><span>1</span><span>0</span><span>6</span></span></span>
+        <span class="formula">descendantes : 2×4×6 + 1×5×1 + 3×0×0 = 48 + 5 + 0 = 53<br>montantes : 3×4×1 + 2×5×0 + 1×0×6 = 12 + 0 + 0 = 12<br>det M = 53 − 12 = 41</span>
+        <p><strong>Contrôle par cofacteurs</strong> (développement sur la première ligne) : <span class="m">2(24 − 0) − 1(0 − 5) + 3(0 − 4) = 48 + 5 − 12 = 41</span>. Les deux méthodes doivent donner le même résultat.</p>
+      </div>
+      <p>Le développement par cofacteurs devient indispensable en 4 × 4 ou dès qu’une ligne contient des zéros : on choisit la ligne ou la colonne la plus vide.</p>
+    </div>
+
     <div class="card">
       <h3>Inverse d’une matrice 2 × 2</h3>
-      <p>A est inversible si et seulement si <span class="m">det(A) ≠ 0</span>. Alors :</p>
-      <span class="formula">A⁻¹ = 1/(ad − bc) × [[d, −b], [−c, a]]</span>
-      <p>On échange a et d, on change le signe de b et c.</p>
+      <p><span class="m">A</span> est inversible <strong>si et seulement si</strong> <span class="m">det(A) ≠ 0</span>. Alors :</p>
+      <span class="formula">A⁻¹ = 1/(ad − bc) × <span class="mx mx--2"><span>d</span><span>−b</span><span>−c</span><span>a</span></span></span>
+      <p>On échange <span class="m">a</span> et <span class="m">d</span>, on change le signe de <span class="m">b</span> et <span class="m">c</span>, puis on divise <strong>toute</strong> la matrice par le déterminant.</p>
+      <div class="ex">
+        <span class="ex__tag">Exemple — A = </span>
+        <span class="formula">A = <span class="mx mx--2"><span>1</span><span>2</span><span>3</span><span>4</span></span> · det A = 4 − 6 = −2<br>A⁻¹ = 1/(−2) × <span class="mx mx--2"><span>4</span><span>−2</span><span>−3</span><span>1</span></span> = <span class="mx mx--2"><span>−2</span><span>1</span><span>1,5</span><span>−0,5</span></span></span>
+        <p><strong>Vérification</strong> : <span class="m">A · A⁻¹ = I₂</span>. C’est le réflexe qui sauve des points, il suffit de 20 secondes.</p>
+      </div>
     </div>
+
     <div class="card">
-      <h3>Systèmes linéaires</h3>
-      <p>Un système s’écrit <span class="m">AX = B</span>. Si A est inversible :</p>
-      <span class="formula">X = A⁻¹ × B</span>
-      <p>Attention à l’ordre : on multiplie A⁻¹ <strong>à gauche</strong>.</p>
+      <h3>Inverse d’une matrice 3 × 3</h3>
+      <p>Méthode par la comatrice (adjugée) :</p>
+      <ol class="steps">
+        <li>Calculer <span class="m">det A</span>. S’il est nul, <strong>arrêter</strong> : pas d’inverse.</li>
+        <li>Calculer les 9 cofacteurs <span class="m">Cᵢⱼ = (−1)ⁱ⁺ʲ × det(mineure)</span>. Le signe suit un damier <span class="m">+ − + / − + − / + − +</span>.</li>
+        <li>Transposer la comatrice pour obtenir la <strong>matrice complémentaire</strong> (adjugée).</li>
+        <li>Diviser par <span class="m">det A</span> : <span class="m">A⁻¹ = (1/det A) × com(A)ᵀ</span>.</li>
+      </ol>
+      <div class="ex">
+        <span class="ex__tag">Exemple — matrice triangulaire</span>
+        <span class="formula">T = <span class="mx mx--3"><span>1</span><span>2</span><span>3</span><span>0</span><span>1</span><span>4</span><span>0</span><span>0</span><span>1</span></span> · det T = 1×1×1 = 1<br>T⁻¹ = <span class="mx mx--3"><span>1</span><span>−2</span><span>5</span><span>0</span><span>1</span><span>−4</span><span>0</span><span>0</span><span>1</span></span></span>
+        <p>Sur une triangulaire, le déterminant est le produit de la diagonale et l’inverse reste triangulaire : c’est le cas le plus simple à traiter en sujet.</p>
+      </div>
     </div>
+
+    <div class="card">
+      <h3>Systèmes linéaires : AX = B</h3>
+      <p>Tout système se réécrit <span class="m">A X = B</span> avec <span class="m">A</span> la matrice des coefficients, <span class="m">X</span> le vecteur des inconnues, <span class="m">B</span> le second membre.</p>
+      <span class="formula">Si det A ≠ 0 : X = A⁻¹ B</span>
+      <p>On multiplie <span class="m">A⁻¹</span> <strong>à gauche</strong> des deux côtés. Écrire <span class="m">B A⁻¹</span> est faux, même quand les dimensions le permettent.</p>
+      <div class="ex">
+        <span class="ex__tag">Exemple — 2x + y = 5 et x + 3y = 10</span>
+        <span class="formula">A = <span class="mx mx--2"><span>2</span><span>1</span><span>1</span><span>3</span></span> · det A = 6 − 1 = 5 ≠ 0</span>
+        <p><strong>Cramer</strong> : <span class="m">x = det(Aₓ)/det(A)</span> où <span class="m">Aₓ</span> est <span class="m">A</span> avec la colonne des <span class="m">x</span> remplacée par <span class="m">B</span>.</p>
+        <span class="formula">x = (5×3 − 1×10)/5 = 5/5 = 1<br>y = (2×10 − 5×1)/5 = 15/5 = 3</span>
+        <p>Solution <span class="m">(1 ; 3)</span>. Vérification : <span class="m">2 + 3 = 5</span> et <span class="m">1 + 9 = 10</span>.</p>
+      </div>
+      <p>Si <span class="m">det A = 0</span> : soit aucune solution, soit une infinité. Le déterminant nul ne signifie jamais « une seule solution ».</p>
+    </div>
+
     <div class="card">
       <h3>Matrices et graphes</h3>
-      <p>Pour un graphe à n sommets, la matrice d’adjacence M est carrée d’ordre n : <span class="m">mᵢⱼ = 1</span> s’il existe une arête de i vers j.</p>
-      <p>Le coefficient <span class="m">(Mᵏ)ᵢⱼ</span> donne le <strong>nombre de chemins de longueur k</strong> allant de i à j. C’est la question classique du sujet SLAM.</p>
+      <p>Pour un graphe à <span class="m">n</span> sommets, la matrice d’adjacence <span class="m">M</span> est carrée d’ordre <span class="m">n</span> : <span class="m">mᵢⱼ = 1</span> s’il existe une arête de <span class="m">i</span> vers <span class="m">j</span>, sinon <span class="m">0</span>.</p>
+      <p>Le coefficient <span class="m">(Mᵏ)ᵢⱼ</span> donne le <strong>nombre de chemins de longueur k</strong> allant de <span class="m">i</span> à <span class="m">j</span>. C’est la question classique du sujet SLAM.</p>
+      <div class="ex">
+        <span class="ex__tag">Exemple — triangle complet</span>
+        <span class="formula">M = <span class="mx mx--3"><span>0</span><span>1</span><span>1</span><span>1</span><span>0</span><span>1</span><span>1</span><span>1</span><span>0</span></span> &nbsp; M² = <span class="mx mx--3"><span>2</span><span>1</span><span>1</span><span>1</span><span>2</span><span>1</span><span>1</span><span>1</span><span>2</span></span></span>
+        <p>De 1 vers 1 en 2 étapes : <span class="m">1→2→1</span> et <span class="m">1→3→1</span>, donc <span class="m">2</span> chemins. La diagonale compte les allers-retours, pas les boucles.</p>
+      </div>
+      <p>Graphe orienté : <span class="m">M</span> n’est pas symétrique. Graphe non orienté : <span class="m">M</span> l’est toujours.</p>
     </div>`,
   pieges: `
-    <div class="trap"><span class="trap__flag">ordre</span><p><span class="m">AB</span> et <span class="m">BA</span> ne donnent pas la même matrice, et l’un peut exister sans l’autre. Toujours vérifier les dimensions avant de calculer.</p></div>
-    <div class="trap"><span class="trap__flag">condition</span><p>Pour <span class="m">A (2×3)</span> et <span class="m">B (2×3)</span>, le produit AB n’existe pas : il faut 3 = 2. C’est BA qui est calculable (3×2 · 2×3 = 3×3).</p></div>
-    <div class="trap"><span class="trap__flag">Sarrus</span><p>Les trois diagonales montantes sont <strong>soustraites</strong>. Oublier un signe fait perdre tout le calcul.</p></div>
-    <div class="trap"><span class="trap__flag">inverse</span><p>Dans <span class="m">[[d, −b], [−c, a]]</span>, les signes moins sont sur b et c, pas sur a et d. Et on divise par le déterminant, on ne le multiplie pas.</p></div>
-    <div class="trap"><span class="trap__flag">A⁻¹B</span><p>Dans <span class="m">AX = B</span>, on multiplie par A⁻¹ à gauche des deux côtés. Écrire <span class="m">X = BA⁻¹</span> est faux.</p></div>
-    <div class="trap"><span class="trap__flag">det = 0</span><p>Déterminant nul signifie non inversible, pas "matrice nulle". Ne pas conclure que tous les coefficients sont nuls.</p></div>`,
+    <div class="trap"><span class="trap__flag">ordre</span><p><span class="m">AB</span> et <span class="m">BA</span> ne donnent pas la même matrice, et l’un peut exister sans l’autre. Vérifier les dimensions avant tout calcul.</p></div>
+    <div class="trap"><span class="trap__flag">condition</span><p>Avec <span class="m">A (2×3)</span> et <span class="m">B (3×4)</span>, <span class="m">AB</span> existe (2×4) mais <span class="m">BA</span> n’existe pas (3×4 · 2×3 : 4 ≠ 2). Un seul des deux produits peut être calculable.</p></div>
+    <div class="trap"><span class="trap__flag">Sarrus</span><p>Les trois diagonales montantes sont <strong>soustraites</strong>. Un signe oublié fait perdre tout le calcul, même si la méthode est juste.</p></div>
+    <div class="trap"><span class="trap__flag">inverse</span><p>Dans <span class="m"><span class="mx mx--2"><span>d</span><span>−b</span><span>−c</span><span>a</span></span></span>, les moins sont sur <span class="m">b</span> et <span class="m">c</span>, pas sur <span class="m">a</span> et <span class="m">d</span>. Et on <strong>divise</strong> par le déterminant.</p></div>
+    <div class="trap"><span class="trap__flag">A⁻¹B</span><p>Dans <span class="m">AX = B</span>, on multiplie par <span class="m">A⁻¹</span> à gauche des deux côtés. Écrire <span class="m">X = BA⁻¹</span> est faux.</p></div>
+    <div class="trap"><span class="trap__flag">det = 0</span><p>Déterminant nul signifie non inversible, pas « matrice nulle ». Aucun coefficient pris isolément n’est forcément nul.</p></div>
+    <div class="trap"><span class="trap__flag">det(kA)</span><p><span class="m">det(kA) = kⁿ det(A)</span>. Mettre <span class="m">k</span> en facteur une seule fois est l’erreur la plus fréquente sur les propriétés.</p></div>
+    <div class="trap"><span class="trap__flag">transposée</span><p><span class="m">(AB)ᵀ = Bᵀ Aᵀ</span> : l’ordre s’inverse. Écrire <span class="m">AᵀBᵀ</span> donne une matrice différente en général.</p></div>`,
   calc: 'mat',
   cards: [
-    { r: 'Dimension', v: 'm lignes × n colonnes, dans cet ordre.' },
+    { r: 'Dimension', v: 'm lignes × n colonnes, toujours dans cet ordre.' },
     { r: 'Produit AB', v: 'Possible si colonnes de A = lignes de B. Résultat m × p.' },
     { r: 'cᵢⱼ', v: 'Ligne i de A fois colonne j de B, produits sommés.' },
+    { r: 'Commutativité', v: 'Fausse en général : AB ≠ BA.' },
+    { r: 'AB = O', v: 'N’implique pas A = O ni B = O.' },
+    { r: '(A + B)²', v: 'A² + AB + BA + B². L’identité remarquable exige AB = BA.' },
+    { r: '(AB)ᵀ', v: 'Bᵀ Aᵀ, l’ordre s’inverse.' },
     { r: 'det 2×2', v: 'ad − bc.' },
+    { r: 'det(kA)', v: 'kⁿ det(A) pour une matrice d’ordre n.' },
     { r: 'Sarrus', v: '3 diagonales descendantes moins 3 diagonales montantes.' },
+    { r: 'Inversible', v: 'Si et seulement si det(A) ≠ 0.' },
     { r: 'A⁻¹ (2×2)', v: '1/det × [[d, −b], [−c, a]], si det ≠ 0.' },
+    { r: 'A⁻¹ (3×3)', v: '1/det × (comatrice transposée).' },
     { r: 'AX = B', v: 'X = A⁻¹B, multiplication à gauche.' },
+    { r: 'Cramer', v: 'xᵢ = det(Aᵢ)/det(A) avec la colonne i remplacée par B.' },
     { r: 'Mᵏ', v: 'Coefficient (i, j) = nombre de chemins de longueur k de i vers j.' }
   ],
   quiz: [
-    { q: 'det [[3, 5], [2, 4]] = ?', opts: ['2', '22', '−2', '12'], a: 0, why: 'ad − bc = 3 × 4 − 5 × 2 = 12 − 10 = 2.' },
+    { q: 'det [[3, 5], [2, 4]] = ?', opts: ['2', '22', '−2', '12'], a: 0, why: 'ad − bc = 3×4 − 5×2 = 12 − 10 = 2.' },
     { q: 'A est de dimension 2×3 et B de dimension 3×4. AB est de dimension :', opts: ['2×4', '3×3', '4×2', 'Le produit n’existe pas'], a: 0, why: '3 = 3 donc le produit existe, et le résultat prend les lignes de A et les colonnes de B : 2×4.' },
-    { q: 'Si det(A) = 0, alors :', opts: ['A n’est pas inversible', 'A est la matrice nulle', 'A⁻¹ = 0', 'A est diagonale'], a: 0, why: 'Le déterminant nul est exactement le critère de non-inversibilité. Cela n’impose rien sur les coefficients pris un par un.' },
-    { q: 'A⁻¹ pour A = [[1, 2], [3, 4]] vaut :', opts: ['[[−2, 1], [1,5, −0,5]]', '[[4, −2], [−3, 1]]', '[[4, 2], [3, 1]]', 'A n’est pas inversible'], a: 0, why: 'det = −2. Donc 1/(−2) × [[4, −2], [−3, 1]] = [[−2, 1], [1,5, −0,5]].' },
-    { q: 'Le coefficient (2,1) de M² compte :', opts: ['Les chemins de longueur 2 du sommet 2 vers le sommet 1', 'Les arêtes entre 1 et 2', 'Le degré du sommet 2', 'Les chemins de longueur 1 de 1 vers 2'], a: 0, why: 'Mᵏ donne les chemins de longueur k, ligne = départ, colonne = arrivée.' },
-    { q: 'AB = 0 implique :', opts: ['Rien de particulier sur A et B', 'A = 0 ou B = 0', 'A et B sont inversibles', 'BA = 0'], a: 0, why: 'Contrairement aux réels, un produit de matrices peut être nul sans qu’aucun facteur le soit.' },
+    { q: 'Si det(A) = 0, alors :', opts: ['A n’est pas inversible', 'A est la matrice nulle', 'A⁻¹ = O', 'A est diagonale'], a: 0, why: 'Le déterminant nul est exactement le critère de non-inversibilité. Cela n’impose rien sur les coefficients pris un par un.' },
+    { q: 'A⁻¹ pour A = [[1, 2], [3, 4]] vaut :', opts: ['[[−2, 1], [1,5, −0,5]]', '[[4, −2], [−3, 1]]', '[[4, 2], [3, 1]]', 'A n’est pas inversible'], a: 0, why: 'det = −2, donc 1/(−2) × [[4, −2], [−3, 1]] = [[−2, 1], [1,5, −0,5]].' },
+    { q: 'Le coefficient (2,1) de M² compte :', opts: ['Les chemins de longueur 2 du sommet 2 vers le sommet 1', 'Les arêtes entre 1 et 2', 'Le degré du sommet 2', 'Les chemins de longueur 1 de 1 vers 2'], a: 0, why: 'Mᵏ donne les chemins de longueur k : ligne = départ, colonne = arrivée.' },
+    { q: 'AB = O implique :', opts: ['Rien de particulier sur A et B', 'A = O ou B = O', 'A et B sont inversibles', 'BA = O'], a: 0, why: 'Contrairement aux réels, un produit de matrices peut être nul sans qu’aucun facteur le soit.' },
     { q: 'Dans AX = B avec A inversible, X vaut :', opts: ['A⁻¹B', 'BA⁻¹', 'B/A', 'A B⁻¹'], a: 0, why: 'On multiplie à gauche par A⁻¹ : A⁻¹AX = A⁻¹B, donc X = A⁻¹B.' },
-    { q: 'det(AB) vaut :', opts: ['det(A) × det(B)', 'det(A) + det(B)', 'det(A) − det(B)', 'det(BA) seulement si AB = BA'], a: 0, why: 'Le déterminant est multiplicatif. Et det(BA) = det(B)det(A) = det(AB) sans condition de commutativité.' }
+    { q: 'det(AB) vaut :', opts: ['det(A) × det(B)', 'det(A) + det(B)', 'det(A) − det(B)', 'det(A) × det(B) seulement si AB = BA'], a: 0, why: 'Le déterminant est multiplicatif. Et det(BA) = det(B)det(A) = det(AB) sans condition de commutativité.' },
+    { q: 'det de M = [[2, 1, 3], [0, 4, 5], [1, 0, 6]] vaut :', opts: ['41', '29', '53', '12'], a: 0, why: 'Sarrus : (48 + 5 + 0) − (12 + 0 + 0) = 53 − 12 = 41.' },
+    { q: 'A = [[0, 1], [0, 0]]. Alors A² vaut :', opts: ['la matrice nulle', 'A', 'I₂', 'elle n’existe pas'], a: 0, why: 'Ligne 1 × colonne 1 = 0, ligne 1 × colonne 2 = 0, etc. A est nilpotente d’ordre 2.' },
+    { q: '(AB)ᵀ est égal à :', opts: ['Bᵀ Aᵀ', 'Aᵀ Bᵀ', 'AB', 'Aᵀ + Bᵀ'], a: 0, why: 'La transposée inverse l’ordre du produit, exactement comme pour (AB)⁻¹.' },
+    { q: 'Pour 2x + y = 5 et x + 3y = 10, la valeur de x est :', opts: ['1', '3', '2', '5'], a: 0, why: 'det A = 6 − 1 = 5 et det Aₓ = 5×3 − 1×10 = 5, donc x = 5/5 = 1.' },
+    { q: 'Le déterminant d’une matrice triangulaire est :', opts: ['Le produit des coefficients diagonaux', 'La somme des coefficients diagonaux', 'Toujours 1', 'Toujours nul'], a: 0, why: 'Tous les termes de Sarrus contenant un zéro s’annulent : seul le produit diagonal subsiste.' }
   ]
 },
 {
