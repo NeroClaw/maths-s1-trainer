@@ -483,6 +483,84 @@ table.tt tr.t td { background: var(--ok-soft); color: var(--ok); font-weight: 60
 .memo-card ul { font-size: var(--fs-sm); padding-inline-start: 1.1rem; }
 .memo-card .formula { font-size: 0.78rem; }
 
+/* ==========================================================================
+   04b. MÉTHODES (recettes pas à pas)
+   ========================================================================== */
+.methode-intro { font-size: var(--fs-sm); color: var(--muted); margin-block-end: var(--space-3); max-inline-size: 62ch; }
+.recette {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-inline-start: 3px solid var(--accent);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  box-shadow: var(--shadow);
+}
+.recette + .recette { margin-block-start: var(--space-3); }
+.recette h3 {
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  margin: 0;
+  padding: 0;
+  color: var(--ink);
+}
+.recette h3::before { content: none; }
+.recette__tag {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-block-end: var(--space-1);
+}
+.recette__when {
+  font-size: var(--fs-sm);
+  background: var(--accent-soft);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2);
+  margin-block: var(--space-2);
+  line-height: 1.6;
+}
+.recette__when strong { color: var(--accent); }
+.recette .steps > li { font-size: var(--fs-sm); }
+.recette .ex { margin-block-start: var(--space-3); }
+.ctrl {
+  border-block-start: 1px dashed var(--line);
+  margin-block: var(--space-3) 0;
+  padding-block-start: var(--space-2);
+  font-size: var(--fs-sm);
+  line-height: 1.6;
+}
+.ctrl strong { color: var(--ok); }
+.blocage {
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  border-inline-start: 2px solid var(--line);
+  padding-inline-start: var(--space-2);
+  margin-block: var(--space-2) 0;
+  line-height: 1.6;
+}
+.blocage strong { color: var(--warn); }
+.copie { border-inline-start: 3px solid var(--ok); }
+.copie__q { font-size: var(--fs-sm); }
+.copy {
+  font-family: var(--font-mono);
+  font-size: 0.73rem;
+  line-height: 1.65;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  margin-block: var(--space-3) 0;
+  white-space: pre-wrap;
+  overflow-x: auto;
+  color: var(--ink);
+}
+
+.tw { overflow-x: auto; margin-block: var(--space-2); -webkit-overflow-scrolling: touch; }
+.tw .basetbl { margin-block: 0; }
+.ex .copy { background: var(--surface); border: 1px solid var(--line); }
+
 footer { border-block-start: 1px solid var(--line); padding-block: var(--space-4); color: var(--muted); font-size: var(--fs-xs); }
 footer p { margin: 0; }
 
@@ -534,13 +612,14 @@ footer p { margin: 0; }
   </div>
 </footer>
 
+<script src="methodes.js?v=1"></script>
 <script>
 const CHAPTERS = [
 {
   id: 'arith',
   num: '01',
   title: 'Arithmétique',
-  tagline: 'Divisibilité, division euclidienne, nombres premiers, PGCD par trois méthodes, Euclide et Bézout démontés pas à pas, PPCM, congruences et clés de contrôle.',
+  tagline: 'Division euclidienne, PGCD, Bézout, PPCM, puissances modulo n et clés de contrôle. Une recette par question, avec le déroulé complet et les pièges.',
   essentiel: `
     <div class="card">
       <h3>Divisibilité : ce que ça veut dire exactement</h3>
@@ -806,7 +885,7 @@ const CHAPTERS = [
   id: 'num',
   num: '02',
   title: 'Numération',
-  tagline: 'Bases 2, 8, 10 et 16, partie fractionnaire, complément à 2, arithmétique binaire, codage et unités. Chapitre mécanique : chaque méthode appliquée proprement rapporte tous les points.',
+  tagline: 'Bases 2, 8, 10 et 16, conversions dans les deux sens, addition en base b, validité des chiffres. Chaque conversion a sa recette et son contrôle.',
   essentiel: `
     <div class="card">
       <h3>Compter dans une base b</h3>
@@ -1031,7 +1110,7 @@ const CHAPTERS = [
   id: 'mat',
   num: '03',
   title: 'Matrices',
-  tagline: 'Vocabulaire, opérations, produit, transposée, déterminants 2×2 et 3×3, inverse, systèmes linéaires et matrices d’adjacence. Le chapitre le plus rentable en points.',
+  tagline: 'Dimensions, produit ligne par colonne, transposée, déterminant, inverse et systèmes linéaires. Les six gestes qui couvrent tous les sujets.',
   essentiel: `
     <div class="card">
       <h3>Vocabulaire et familles de matrices</h3>
@@ -1226,7 +1305,7 @@ const CHAPTERS = [
   id: 'log',
   num: '04',
   title: 'Propositions',
-  tagline: 'Connecteurs et tables de vérité expliqués, implication et ses trois cousines, équivalences, quantificateurs et méthodes de démonstration avec exemples.',
+  tagline: 'Traduction, tables de vérité, négation, implication contre réciproque et contraposée, quantificateurs. Des procédures, pas du vocabulaire.',
   essentiel: `
     <div class="card">
       <h3>Proposition, connecteurs : le vocabulaire</h3>
@@ -1387,7 +1466,7 @@ const CHAPTERS = [
   id: 'ens',
   num: '05',
   title: 'Ensembles',
-  tagline: 'Écritures, appartenance contre inclusion, opérations calculées, méthode des régions, cardinaux à deux et trois ensembles, partitions et ensemble des parties.',
+  tagline: 'Écritures, appartenance contre inclusion, opérations, ensemble des parties, double inclusion et dénombrement. Le test d’appartenance fait tout le travail.',
   essentiel: `
     <div class="card">
       <h3>Définir un ensemble</h3>
@@ -1755,6 +1834,11 @@ function panelHTML(ch) {
     '<h1>' + ch.title + '</h1>' +
     '<p>' + ch.tagline + '</p>' +
   '</div>' +
+  '<section class="block">' +
+    '<h2 class="block__title"><span class="ic">▸</span> La méthode, étape par étape</h2>' +
+    '' +
+    (typeof METHODES !== 'undefined' && METHODES[ch.id] ? METHODES[ch.id] : '<p class="hint">Méthode en cours de rédaction pour ce chapitre.</p>') +
+  '</section>' +
   '<section class="block">' +
     '<h2 class="block__title"><span class="ic">◆</span> L’essentiel</h2>' +
     ch.essentiel +
