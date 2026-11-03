@@ -1,5 +1,9 @@
 # Maths S1 · BTS SIO
 
+**🔗 En ligne :** https://neroclaw.github.io/maths-s1-trainer/ · **📦 Code :** https://github.com/NeroClaw/maths-s1-trainer
+
+---
+
 Trainer interactif pour réviser les maths du BTS blanc (programme S1).
 
 - 5 chapitres : arithmétique, numération, matrices, propositions, ensembles
